@@ -1,0 +1,379 @@
+---
+title: "Midterm Project"
+author: Chong Li
+output:
+  pdf_document:
+    toc: yes
+    toc_depth: 2
+  html_document:
+    df_print: paged
+    toc: yes
+    toc_depth: '2'
+header-includes:
+- \usepackage{fancyhdr}
+- \usepackage{lipsum}
+- \pagestyle{fancy}
+- \fancyhead[R]{\thepage}
+- \fancypagestyle{plain}{\pagestyle{fancy}}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+library(tidyverse)
+library(readxl)
+library(caret)
+library(leaps)
+library(RNHANES)
+library(ggplot2)
+library(patchwork)
+library(ISLR)
+library(pls)
+library(glmnet)
+library(MASS)
+library(klaR)
+library(vip)
+library(rpart)
+library(rpart.plot)
+library(party)
+library(partykit)
+```
+# Introduction
+```{r data_recode_1}
+df1 = read.csv("./adult.csv", na = "?")
+income_df = read.csv("./adult.csv", na = "?")%>%
+  janitor::clean_names() %>%
+  dplyr::select(-c(education,fnlwgt))%>%
+  drop_na
+  # not necessary given number of education years, fnlwgt is not needed
+
+
+# recode work class. gov-employed = 0, private = 1, self-employed = 2; drop 14 entries with no jobs 
+cols = c("workclass","marital_status","occupation","relationship","race","sex","native_country",
+         "capital_gain","capital_loss","income")
+
+income_df = income_df %>%
+             mutate_each_(funs(factor(.)),cols) %>%
+  mutate(
+    workclass = recode(workclass, "State-gov" = 0,
+                       "Federal-gov" = 0,
+                       "Local-gov" = 0,
+                       "Private" = 1,
+                       "Self-emp-inc" = 2,
+                       "Self-emp-not-inc" = 2)
+  )%>%
+  drop_na
+
+# recode marital_status: divorced = 0, married = 1, never-married = 2, separated = 3, widowed = 4
+income_df = income_df %>%
+  mutate(
+     marital_status = recode(marital_status, "Divorced" = 0,
+                       "Married-civ-spouse" = 1,
+                       "Married-spouse-absent" = 1,
+                       "Married-AF-spouse" = 1,
+                       "Never-married" = 2,
+                       "Separated" = 3,
+                       "Widowed" = 4))
+
+# recode relationship: husband = 0, not-in-family = 1, other-relative = 2, own-child = 3, unmarried = 4, wife = 5
+income_df = income_df %>%
+  mutate(
+     relationship = recode(relationship, "Husband" = 0,
+                       "Not-in-family" = 1,
+                       "Other-relative" = 2,
+                       "Own-child" = 3,
+                       "Unmarried" = 4,
+                       "Wife" = 5))
+
+# recode race: white = 0, black = 1, asian = 2, others = 3
+income_df = income_df %>%
+  mutate(
+     race = recode(race, "White" = 0,
+                       "Black" = 1,
+                       "Asian-Pac-Islander" = 2,
+                       "Other" = 3,
+                       "Amer-Indian-Eskimo" = 3))
+
+# Recode sex: female = 0, male = 1
+income_df = income_df %>%
+  mutate(
+     sex = recode(sex, "Female" = 0,
+                       "Male" = 1,))
+
+# Recode income: <=50k = 0, >50k = 1
+income_df = income_df %>%
+  mutate(
+     income = recode(income, "<=50K" = 'false',
+                       ">50K" = 'true'))
+
+
+# Recode capital gain: zero capital gain = 0, non-zero capital gain = 1
+income_df = income_df %>% 
+  mutate(capital_gain = case_when(
+    capital_gain == 0 ~ 0,
+    capital_gain != 0 ~ 1
+  ))
+
+# Recode capital loss: zero capital loss = 0, non-zero capital loss = 1
+income_df = income_df %>% 
+  mutate(capital_loss = case_when(
+    capital_loss == 0 ~ 0,
+    capital_loss != 0 ~ 1
+  ))
+
+# Recode native country: United-States = 0, Non-United-States = 1
+income_df = income_df %>% 
+  mutate(native_country = case_when(
+    native_country == "United-States" ~ 0,
+    native_country != "United-States" ~ 1
+  ))
+
+```
+```{r data_recode_2}
+# Recode occupation: MBSA = 0, Service = 1, Sales = 2, NCM = 3, PTM = 4. Drop military because of not enough entries
+income_df = income_df %>% 
+  mutate(occupation = case_when(
+    occupation == "Adm-clerical" ~ 0, occupation == "Exec-managerial" ~ 0,
+    occupation == "Prof-specialty" ~ 0, occupation == "Tech-support" ~ 0,
+    occupation == "Handlers-cleaners" ~ 1, occupation == "Other-service" ~ 1,
+    occupation == "Priv-house-serv" ~ 1, occupation == "Protective-serv" ~ 1,
+    occupation == "Sales"  ~ 2,
+    occupation == "Transport-moving" ~ 3,
+    occupation == "Farming-fishing" ~ 4, occupation == "Craft-repair" ~ 4, occupation == "Machine-op-inspct" ~ 4
+  )) %>%
+  drop_na
+
+income_df = income_df %>%
+  mutate_each_(funs(factor(.)),cols)
+
+```
+# Exploratory Data Analysis
+```{r graph_1&2}
+# predictor matrix
+x = model.matrix(income ~ ., income_df)[,-1]
+
+# plot of covariance
+corrplot::corrplot(cor(x), method = "square", type = "full")
+
+# plot of continuous variables
+graph_age = ggplot(data=income_df, aes(x=age,y=education_num,col=income)) +
+  geom_point()
+
+graph_hours = ggplot(data=income_df, aes(x=hours_per_week,y=education_num,col=income)) +
+  geom_point()
+
+graph_age/graph_hours
+```
+```{r data summary}
+summary(income_df)
+```
+```{r graph_3}
+# bar graphs showing the distribution of income level by categorical variables
+graph_occu = ggplot(data=income_df, aes(x=occupation,fill=income)) +
+  geom_bar(position=position_dodge()) 
+
+graph_wclass = ggplot(data=income_df, aes(x=workclass,fill=income)) +
+  geom_bar(position=position_dodge()) 
+
+graph_race = ggplot(data=income_df, aes(x=race,fill=income)) +
+  geom_bar(position=position_dodge()) 
+
+graph_marital = ggplot(data=income_df, aes(x=marital_status,fill=income)) +
+  geom_bar(position=position_dodge()) 
+
+graph_sex = ggplot(data=income_df, aes(x=sex,fill=income)) +
+  geom_bar(position=position_dodge()) 
+
+graph_native = ggplot(data=income_df, aes(x=native_country,fill=income)) +
+  geom_bar(position=position_dodge()) 
+
+graph_gain = ggplot(data=income_df, aes(x=capital_gain,fill=income)) +
+  geom_bar(position=position_dodge()) 
+
+graph_loss = ggplot(data=income_df, aes(x=capital_loss,fill=income)) +
+  geom_bar(position=position_dodge()) 
+
+(graph_occu+graph_wclass+graph_race+graph_gain)/(graph_marital+graph_sex+graph_native+graph_loss)
+```
+# Models
+```{r data partition}
+set.seed(2005)
+
+# remove relationship
+income_df = income_df %>%
+  dplyr::select(-relationship)
+
+trainRows = createDataPartition(y = income_df$income, p = 0.8, list = FALSE)
+
+# training data and test data split
+x_train <- model.matrix(income~.,income_df)[trainRows,-1] 
+y_train <- income_df$income[trainRows]
+
+# test data
+x_test <- model.matrix(income~.,income_df)[-trainRows,-1]
+y_test <- income_df$income[-trainRows]
+
+ctrl <- trainControl(method = "repeatedcv", repeats = 5, summaryFunction = twoClassSummary,
+                     classProbs = TRUE)
+```
+```{r penalized logistic regression}
+glmnGrid <- expand.grid(.alpha = seq(0, 1, length = 6),
+                  .lambda = exp(seq(-8, -2, length = 20)))
+
+log_1_reg =
+  train(
+    x_train,
+    y_train,
+    method = "glmnet",
+    tuneGrid = glmnGrid,
+    trControl = ctrl,
+    metric = "ROC"
+  )
+```
+```{r logistic regression tuning parameter}
+plot(log_1_reg, xTrans = function(x) log(x))
+```
+```{r penalized regression summary}
+# lasso penalty, small lambda penalization
+log_1_reg$bestTune
+
+vi(log_1_reg)
+vip(log_1_reg$finalModel,width = 0.5)
+test.pred.prob.1 <- predict(log_1_reg,newdata = x_test, 
+                          type = "raw")
+
+confusionMatrix(test.pred.prob.1,y_test)
+```
+```{r logistic regression}
+set.seed(2)
+
+glm.fit <- glm(income ~ ., data = income_df,
+                subset = trainRows,
+                family = binomial(link = "logit"))
+
+test.pred.prob <- predict(glm.fit,newdata = income_df[-trainRows,], 
+                          type = "response")
+
+test.pred <- rep("false", length(test.pred.prob)) 
+test.pred[test.pred.prob>0.5] <- "true"
+
+confusionMatrix(data = as.factor(test.pred), 
+                reference = y_test,
+                positive = "true")
+
+roc.glm <- pROC::roc(y_test, test.pred.prob) 
+plot(roc.glm, legacy.axes = TRUE, print.auc = TRUE) 
+```
+
+```{r logistic regression summary}
+summary(glm.fit)
+```
+```{r lda}
+lda.fit = lda(income ~ .,
+              data = income_df,
+              subset = trainRows)
+
+lda.pred = predict(lda.fit, 
+                   newdata = income_df[-trainRows,])
+
+plot(lda.fit)
+
+confusionMatrix(data = as.factor(lda.pred$class), 
+                reference = y_test,
+                positive = "true")
+
+roc.lda = pROC::roc(income_df[-trainRows,]$income, 
+          lda.pred$posterior[,2],
+          levels = c("false", "true"))
+
+plot(roc.lda, legacy.axes = TRUE, print.auc = TRUE)
+
+```
+```{r qda}
+qda.fit = qda(income ~ .,
+              data = income_df,
+              subset = trainRows)
+
+qda.pred = predict(qda.fit, 
+                   newdata = income_df[-trainRows,])
+
+confusionMatrix(data = as.factor(qda.pred$class), 
+                reference = y_test,
+                positive = "true")
+
+roc.qda = pROC::roc(income_df[-trainRows,]$income, 
+              qda.pred$posterior[,2],
+              levels = c("false", "true"))
+
+plot(roc.qda, legacy.axes = TRUE, print.auc = TRUE)
+```
+```{r qda CV}
+# QDA with caret
+set.seed(35)
+model.qda.cv <- train(x = x_train,
+                   y = y_train,
+                   method = "qda",
+                   metric = "ROC",
+                   trControl = ctrl)
+```
+```{r lda CV}
+# LDA with caret
+set.seed(29)
+model.lda.cv <- train(x = x_train,
+                   y = y_train,
+                   method = "lda",
+                   metric = "ROC",
+                   trControl = ctrl)
+```
+```{r knn CV}
+# KNN model
+# ultimately was not used due to hardware issue (computer overheating for the task)
+set.seed(1092)
+model.knn <- train(x = x_train,
+                   y = y_train,
+                   method = "knn",
+                   preProcess = c("center","scale"),
+                   tuneGrid = data.frame(k = seq(1,200,by=5)),
+                   trControl = ctrl)
+```
+```{r regression tree}
+set.seed(1)
+tree_1 <- rpart(income ~ . ,
+               data = income_df, subset = trainRows,
+              control = rpart.control(cp = 0.001)) 
+rpart.plot(tree_1)
+
+```
+```{r regression tree analysis}
+cpTable <- tree_1$cptable 
+plotcp(tree_1)
+
+tree_2 <- rpart(income ~ . ,
+               data = income_df, subset = trainRows,
+              control = rpart.control(cp = 0.0041)) 
+rpart.plot(tree_2)
+
+
+rpart.pred <- predict(tree_2, newdata = income_df[-trainRows,])[,1]
+
+
+roc.rpart <- pROC::roc(income_df$income[-trainRows], rpart.pred)
+
+plot(roc.rpart, legacy.axes = TRUE, print.auc = TRUE)
+```
+```{r ROC curve graph}
+plot(roc.glm, col = 1, legacy.axes = TRUE) 
+plot(roc.lda, col = 2, add = TRUE) 
+plot(roc.qda, col = 3, add = TRUE) 
+plot(roc.rpart, col = 4, add = TRUE) 
+
+models = c("Logistic","LDA","QDA","Tree")
+auc = c(roc.glm$auc[1], roc.lda$auc[1], roc.qda$auc[1], 0.8400)
+
+legend("bottomright", 
+       legend = paste0(models, "=", round(auc,4)), 
+       col = 1:5,
+       lwd = 2)
+```
+
+
+
