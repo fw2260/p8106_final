@@ -111,6 +111,7 @@ summary(income_df)
 ## Exploratory Analysis and Visualization
 
 ## Training and Test data  
+
 ```{r train}
 set.seed(35)
 indexTrain = createDataPartition(y = income_df$income, p = 0.8, list = FALSE)
@@ -137,7 +138,6 @@ occ_plot = ggplot(income_df, aes(x = occupation ,
 race_plot = ggplot(income_df, aes(x = race, 
            fill = income)) + geom_bar(position = "stack")
 
-
 work_plot + marital_plot + occ_plot + race_plot + plot_layout(ncol = 2) + 
   plot_annotation(title = "Income Level Distribution" )
 ```
@@ -146,15 +146,15 @@ For the categorical variables with multiple classes, we can see that in workclas
 
 ## Models
 
-I decided to use the GLM, LDA, QDA, GAM and KNN models. For all models, all the variables present in the original data set, except the "education" variable, were used as predictors. The response variable is income, which is binary. 
+I decided to use the GLM, LDA, QDA and GAM models. For all models, all the variables present in the original data set, except the "education" variable, were used as predictors. The response variable is income, which is binary. 
 
+
+## GLM
 
 ```{r glm}
 glm.fit = glm(income~., data = income_df, family = binomial(link = "logit"))
 # summary(glm.fit)
 ```
-
-## GLM
 
 (1)Model Assumptions: 
 
@@ -175,6 +175,8 @@ The main limitation is that the GLM model assumes that the relationship between 
 ```
 
 
+## LDA and QDA
+
 ```{r lda}
 set.seed(35)
 lda.fit = train(income~., data = trainSet, method = "lda",
@@ -188,8 +190,6 @@ qda.fit = train(income~., data = trainSet, method = "qda",
                 metric = "ROC", 
                 trControl = ctrl)
 ```
-
-## LDA and QDA
 
 (1) Model Assumptions:
 
@@ -209,14 +209,6 @@ A limitation of the QDA model is its lack of ability to reduce dimensions. This 
 
 ## GAM
 
-(1) Model Assumptions:
-
-The GAM model assumes that the model function is additive and the components are smooth. The observations are statistically independent and the variables are not highly correlated with each other are other assumptions for this model. Specific observations will not influence the fit of the model. 
-
-(2) Limitations:
-
-One of the main limitations of the GAM is its computational complexity. Also, like many nonparametric methods, GAM models have a high propensity to overfit. The choosing of smoothing parameters may affect the bias and variance tradeoff as well as cause either the fitted curves to be wiggly and hard to interpret or too smooth and missing out on important patterns.
-
 ```{r gam}
 set.seed(35)
 
@@ -225,9 +217,16 @@ gam.fit = train(income ~., data = trainSet, method = "gam",
                 trControl = ctrl)
                  
 # gam.fit$bestTune
-
 # gam.fit$finalModel
 ```
+
+(1) Model Assumptions:
+
+The GAM model assumes that the model function is additive and the components are smooth. The observations are statistically independent and the variables are not highly correlated with each other are other assumptions for this model. Specific observations will not influence the fit of the model. 
+
+(2) Limitations:
+
+One of the main limitations of the GAM is its computational complexity. Also, like many nonparametric methods, GAM models have a high propensity to overfit. The choosing of smoothing parameters may affect the bias and variance tradeoff as well as cause either the fitted curves to be wiggly and hard to interpret or too smooth and missing out on important patterns.
 
 
 ## ROC curves
@@ -264,12 +263,13 @@ modelNames = c("glm", "lda", "qda","gam")
 legend("bottomright", legend = paste0(modelNames, ": ", round(auc,3)),
        col = 1:4, lwd = 2)
 ```
+
 ```{r comment3}
 # Feedback: GAM not shown in graph
 # the predicting for the gam model didn't work at my last knit so I left it out.
 ```
 
-Findings:
+## Graph Findings
 
 From the ROC graph, we can see that the GLM model has the highest AUC value and thus the best performance on the test data. However, the LDA and QDA models also have decent performance and can classify income with high accuracy. 
 
