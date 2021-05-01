@@ -1,0 +1,315 @@
+---
+title: "Income classification based on the 1994 US census"
+author: "Lily Wang"
+date: "3/6/2021"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(message = FALSE, warning = FALSE, echo = FALSE)
+
+library(tidyverse)
+library(caret)
+library(visdat)
+library(pROC)
+library(rpart.plot)
+library(patchwork)
+library(vip)
+```
+
+## Introduction
+
+```{r read dataset}
+income_df <- read_csv("census_income.csv") %>% 
+  mutate_all(list(~gsub("\\?", NA, .))) 
+```
+
+The dataset used in this project was extracted from the 1994 US Census Bureau database by Ronny Kohavi and Barry Becker (Data Mining and Visualization, Silicon Graphics). The dataset contains `r nrow(income_df)` observations and `r ncol(income_df)` variables. The outcome variable is a binary variable, `income`, which represents whether or not a person makes greater than or less than/equal to $50k a year. The predictor variables are: `age`, `fnlwgt`, `education.num`, `capital.gain`, `capital.loss`, `hours.per.week`, `workclass`, `education`, `marital.status`, `occupation`, `relationship`, `race`, `sex` , and `native.country`. The first 6 of these are continuous and the latter 8 are categorical. `education` was dropped as it was redundant with `education.num`.
+
+Because many of the categorical predictors had multiple levels (e.g. `native.country` contained `r length(unique(income_df$native.country))` unique observations), this meant that some levels ultimately have very few observations especially in cases where the distributions were skewed. This posed an issue in data partitioning later on because oftentimes, all the observations of a level could be allocated to the training or testing dataset. 
+
+To remedy this issue, the levels of the predictors that contained more than 5 levels were grouped based on logical sense. All the different "married" categories in `marital.status` were grouped together, as well as all the different "self-employed" categories in `workclass`. `occupation` was grouped according to the 2018 census occupation classification list. The abbreviations are as follows: MBSA = Managerial, Business, Science, and Arts, NCM = Natural Resources, Construction, and Maintenance, and PTM = Production, Transportation, and Material Moving.
+
+```{r cleaning, fig.width = 9}
+# recoding and grouping categories
+income_df <- income_df %>% 
+  mutate(income = recode(income, "<=50K" = "le50k", ">50K" = "g50k")) %>% 
+  mutate(workclass = ifelse(workclass %in% c("State-gov", "Federal-gov", "Local-gov"), "Gov", workclass),
+         workclass = ifelse(workclass %in% c("Self-emp-not-inc", "Self-emp-inc"), "Self-emp", workclass),
+         marital.status = ifelse(marital.status %in% c("Married-civ-spouse", "Married-spouse-absent", "Married-AF-spouse"), "Married", marital.status),
+         occupation = ifelse(occupation %in% c("Exec-managerial", "Adm-clerical", "Prof-specialty", "Tech-support"), "MBSA", occupation),
+         occupation = ifelse(occupation %in% c("Handlers-cleaners", "Protective-serv", "Priv-house-serv", "Other-service"), "Service", occupation),
+         occupation = ifelse(occupation %in% c("Craft-repair", "Farming-fishing", "Machine-op-inspct"), "NCM", occupation),
+         occupation = recode(occupation, "Transport-moving" = "PTM"),
+         native.country = ifelse(native.country != "United-States", "Other", "US"))
+
+vis_miss(income_df)
+
+# drop NA and extra observations
+income_df <-
+  income_df %>% 
+  drop_na() %>% 
+  filter(workclass != "Without-pay") %>% 
+  filter(occupation != "Armed-Forces") %>% 
+  select(-education) 
+
+# make factors and group column locations by continuous vs categorical
+income_df <- income_df %>% 
+  mutate_all(list(~gsub("\\-", "_", .))) %>% 
+  mutate_at(vars(age, fnlwgt, education.num, 
+                 capital.gain, capital.loss, hours.per.week), 
+            list(as.numeric)) %>% 
+  mutate_at(vars(workclass, marital.status, occupation,
+                 relationship, race, sex, native.country, income),
+            list(factor)) %>% 
+  relocate(age, fnlwgt, education.num, 
+                 capital.gain, capital.loss, hours.per.week, everything())
+```
+
+As seen from the table above, only 0.9% of the data was missing from just three predictors, so the missing observations were dropped. After dropping the missing observations, the "Without-pay" category of `workclass` and "Armed-Forces" category of `occupation` had very few observations and did not fit in with any of the other categories, thus all observations of those two categories were dropped as well.
+
+After the cleaning process outlined above, our final dataset contained `r nrow(income_df)` observations and `r ncol(income_df)` variables. Ultimately, we are interested in answering the following questions: 
+
+1. How accurately can we classify income based on the information we have? 
+
+2. Which variables are the most important in classifying income? 
+
+
+## Exploratory Analysis and Visualization
+
+#### Continuous Predictors
+
+```{r fig.align='center'}
+cont_df <- income_df %>% 
+  select(age, fnlwgt, education.num, capital.gain,
+         capital.loss, hours.per.week, income) %>% 
+  pivot_longer(age:hours.per.week,
+               names_to = "predictors",
+               values_to = "value")
+
+cont_df %>% 
+  ggplot(aes(x = predictors, y = value, fill = income)) +
+  geom_violin() +
+  facet_wrap(.~predictors, scales = "free", nrow = 3) +
+  labs(x = "Predictors",
+       y = "Value")
+```
+
+Among the continuous predictors, overall, it seems that the age of people whose income is less than 50k is skewed younger, while the age of people whose income is more than 50k is more normally distributed and older. People whose income is more than 50k also tend to be more highly educated and many of them work more than 40 hours per week. People whose income is less than or equal to 50k mostly work around 40 hours per week and have 0 capital gains. Furthermore, aside from `age`, all other predictors are not close to being normally distributed.
+
+#### Categorical Predictors
+
+```{r fig.align='center'}
+discrete_df <- 
+  income_df %>% 
+  select_if(is.factor) %>% 
+  pivot_longer(workclass:native.country,
+               names_to = "predictors",
+               values_to = "value") %>% 
+  group_by(income, predictors) %>% 
+  count(value)
+
+discrete_df %>% 
+  ggplot(aes(x = value, y = n, fill = income)) +
+  geom_bar(position="stack", stat="identity") +
+  facet_wrap(.~predictors, scales = "free", nrow = 4) +
+  theme(axis.text.x = element_text(angle = 20, hjust=1)) +
+  labs(x = "Predictors",
+       y = "Total count")
+```
+
+Among the categorical predictors, it seems that, in comparison to all other categories and predictors, a greater proportion of people who make over 50k are married, white, in MBSA, male, or native to the US. Interestingly, although the proportion of over 50k to under 50k is smaller in females than males, that proportion looks to be around 50% in both the husband and wife categories in the `relationship` predictor.
+
+## Models
+
+```{r}
+# turn categorical variables into dummy variables
+income2 <- model.matrix(income ~ ., income_df)[ ,-1]
+
+set.seed(23)
+rowTrain <- createDataPartition(y = income_df$income,
+                                p = 0.7,
+                                list = FALSE)
+
+# matrix of predictors
+x <- income2[rowTrain,]
+# vector of response
+y <- income_df$income[rowTrain]
+
+# corrplot::corrplot(cor(x), method = "circle", type = "full")
+```
+
+```{r cache=TRUE}
+ctrl <- trainControl(method = "repeatedcv", repeats = 5,
+                     summaryFunction = twoClassSummary,
+                     classProbs = TRUE)
+
+glmnGrid <- expand.grid(.alpha = seq(0, 1, length = 6),
+                        .lambda = exp(seq(-11, -3, length = 20)))
+set.seed(23)
+model.glmn <- train(x = x,
+                    y = y,
+                    method = "glmnet",
+                    tuneGrid = glmnGrid,
+                    metric = "ROC", 
+                    trControl = ctrl)
+
+plot(model.glmn, xTrans = function(x) log(x)) 
+
+model.glmn$bestTune
+
+coef(model.glmn$finalModel, model.glmn$bestTune$lambda)
+```
+
+```{r cache = TRUE}
+set.seed(23)
+model.qda <- train(x = x,
+                   y = y,
+                   method = "qda",
+                   metric = "ROC",
+                   trControl = ctrl)
+
+set.seed(23)
+model.lda <- train(x = x,
+                   y = y,
+                   method = "lda",
+                   metric = "ROC",
+                   trControl = ctrl)
+
+set.seed(23)
+model.glm <- train(x = x,
+                   y = y,
+                   method = "glm",
+                   trControl = ctrl, 
+                   metric = "ROC")
+
+summary(glm(income ~ ., data = income_df, subset = rowTrain, family = "binomial"))
+
+```
+
+```{r cache = TRUE}
+set.seed(23)
+model.knn <- train(x = x,
+                   y = y,
+                   method = "knn",
+                   preProcess = c("center","scale"),
+                   tuneGrid = data.frame(k = seq(1,150,by=5)),
+                   trControl = ctrl)
+
+ggplot(model.knn, highlight = TRUE)
+```
+
+```{r cache = TRUE}
+# Did not use because received warning saying iteration limit reached without full convergence
+# set.seed(23)
+# model.gam <- train(x = income2[rowTrain,],
+#                    y = income_df$income[rowTrain],
+#                    method = "gam",
+#                    metric = "ROC",
+#                    trControl = ctrl)
+
+set.seed(23)
+rpart.fit <- train(income ~ . , 
+                   income_df, 
+                   subset = rowTrain,
+                   method = "rpart",
+                   tuneGrid = data.frame(cp = exp(seq(-11,-5, len = 50))),
+                   trControl = ctrl,
+                   metric = "ROC")
+ggplot(rpart.fit, highlight = TRUE)
+rpart.plot(rpart.fit$finalModel)
+
+# Did not use because data very non-normal and keep running into resampling error
+# set.seed(23)
+# nbGrid <- expand.grid(usekernel = c(FALSE, TRUE),
+#                       fL = 1, 
+#                       adjust = seq(.2, 3, by = .2))
+# 
+# model.nb <- train(x = x,
+#                    y = y,
+#                    method = "nb",
+#                    tuneGrid = nbGrid,
+#                    trControl = ctrl, 
+#                   metric = "ROC") 
+
+res <- resamples(list(GLM = model.glm,
+                      GLMNET = model.glmn,
+                      LDA = model.lda,
+                      QDA = model.qda,
+                      KNN = model.knn,
+                      RPART = rpart.fit))
+summary(res)
+```
+
+### Model Selection
+
+All categorical predictors were turned into dummy variables and the dataset was split into 70:30 training to test data. The training data with all predictors was then trained on a variety of models with ranging flexibility and assumptions: logistic regression, penalized logistic regression, LDA, QDA, KNN, and decision tree. Naive-Bayes and GAM were tried as well but they were met with errors/warnings. The table below shows the cross-validation AUC results:
+
+| model | mean AUC |
+|-------|----------|
+| GLM | 0.901 |
+|GLMNET | 0.901 | 
+| LDA | 0.889 |
+| QDA | 0.865 |
+| KNN | 0.883 |
+| RPART | 0.888 |
+
+Then the models were tested on the test dataset:
+
+```{r cache = TRUE}
+lda.pred <- predict(model.lda, newdata = income2[-rowTrain,], type = "prob")[,2]
+qda.pred <- predict(model.qda, newdata = income2[-rowTrain,], type = "prob")[,2]
+glm.pred <- predict(model.glm, newdata = income2[-rowTrain,], type = "prob")[,2]
+glmn.pred <- predict(model.glmn, newdata = income2[-rowTrain,], type = "prob")[,2]
+knn.pred <- predict(model.knn, newdata = income2[-rowTrain,], type = "prob")[,2]
+rpart.pred <- predict(rpart.fit, newdata = income_df[-rowTrain,], type = "prob")[,1]
+
+roc.lda <- roc(income_df$income[-rowTrain], lda.pred)
+roc.qda <- roc(income_df$income[-rowTrain], qda.pred)
+roc.glm <- roc(income_df$income[-rowTrain], glm.pred)
+roc.glmn <- roc(income_df$income[-rowTrain], glmn.pred)
+roc.knn <- roc(income_df$income[-rowTrain], knn.pred)
+roc.rpart <- roc(income_df$income[-rowTrain], rpart.pred)
+
+auc <- c(roc.lda$auc[1], roc.qda$auc[1], roc.glm$auc[1], roc.glmn$auc[1],
+         roc.knn$auc[1], roc.rpart$auc[1])
+
+plot(roc.lda, legacy.axes = TRUE)
+plot(roc.qda, col = 2, add = TRUE)
+plot(roc.glm, col = 3, add = TRUE)
+plot(roc.glmn, col = 4, add = TRUE)
+plot(roc.knn, col = 5, add = TRUE)
+plot(roc.rpart, col = 6, add = TRUE)
+
+modelNames <- c("lda","qda", "glm", "glmn", "knn", "rpart")
+legend("bottomright", legend = paste0(modelNames, ": ", round(auc,3)),
+       col = 1:6, lwd = 2, cex = 0.8)
+```
+
+While all models performed very well in classifying income on the training and testing datasets with AUC > 80, logistic regression and penalized logistic regression had the best performance on both the training and testing datasets. These two models are less flexible than some of the other models that were trained, like KNN and decision tree. 
+
+The logistic regression did not require parameter tuning, but fitting the penalized regression model required tuning both alpha and lambda, so an optimal grid was picked by graphing the cross-validated AUC and tuning the ranges of the grid so that the point at which AUC was maximized was contained within the graph.
+
+### Variable Importance
+
+The important variables in the logistic regression and penalized regression model shared similarities. As seen from table below, both models' top 10 most important variables contained the predictors `sexMale`, `occupationNCM`, `occupationService`, `occupationPTM`, and `relationshipWife`. However, the logistic regression model deemed all of the continuous predictors except `fnalwgt` as more important while the penalized regression model did not.
+
+```{r}
+vip.glm <- vip(model.glm$finalModel) + ggtitle("Logistic Regression")
+vip.glmn <- vip(model.glmn$finalModel) + ggtitle("Penalized Logistic Regression")
+vip.glm + vip.glmn
+```
+
+### Limitations
+
+Running the logistic regression resulted in multiple warning messages: `glm.fit: fitted probabilities numerically 0 or 1 occurred`. These messages indicate that some of the classes could be well-separated, which in turn, would make the parameter estimates for the model unstable. However, while LDA handles well-separated classes better, it did not end up performing any better.
+
+Additionally, due to the highly skewed, non-normal distribution of the predictors, some of the models with normal distribution assumptions like LDA and Naive-Bayes may not have performed as well despite their being quite robust to assumption violations. In fact, Naive-Bayes could not even finish running. 
+
+Finally, as we did decide to drop the observations that were missing as well as levels of predictors that did not have enough observations, doing so may have introduced some bias into our final dataset.
+
+## Conclusions
+
+We found that from the 1994 US census dataset, logistic regression and penalized logistic regression performed the best at classifying income to less than/equal to 50k or above 50k. It was somewhat expected that logistic regression would perform better than LDA and Naive-Bayes given the extreme violation of normality assumptions in the predictors. 
+
+Some of the predictors discussed during EDA did end up becoming important predictors of income in the models, such as being male and being a wife (and years of education, hours worked per week, and age in the logistic regression model), which mostly make sense logically and have been found to have an effect on income through studies.
