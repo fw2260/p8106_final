@@ -4,25 +4,100 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE,warning=FALSE,messages=FALSE)
+library(tidyverse)
+library(readxl)
+library(EnvStats)
 ```
 
-## R Markdown
-
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
+```{r}
+# Read in the data
+income_df = read.csv("adult.csv") %>% 
+  mutate_all(list(~gsub("\\?", NA, .))) 
 ```
 
-## Including Plots
+```{r}
+# recoding and grouping categories
+# 1. rename income variables
+# 2. categorize workclass into gov,self_emp, private
+# 3. merge marital status into married
+# 4. merge occupation into MBSA/Service/NCM/PTM
+# 5. merge native countries into US/Others
+income_df <- income_df %>% 
+  mutate(income = recode(income, "<=50K" = "le50k", ">50K" = "g50k")) %>% 
+  mutate(workclass = ifelse(workclass %in% c("State-gov", "Federal-gov", "Local-gov"), "Gov", workclass),
+         workclass = ifelse(workclass %in% c("Self-emp-not-inc", "Self-emp-inc"), "Self-emp", workclass),
+         marital.status = ifelse(marital.status %in% c("Married-civ-spouse", "Married-spouse-absent", "Married-AF-spouse"), "Married", marital.status),
+         occupation = ifelse(occupation %in% c("Exec-managerial", "Adm-clerical", "Prof-specialty", "Tech-support"), "MBSA", occupation),
+         occupation = ifelse(occupation %in% c("Handlers-cleaners", "Protective-serv", "Priv-house-serv", "Other-service"), "Service", occupation),
+         occupation = ifelse(occupation %in% c("Craft-repair", "Farming-fishing", "Machine-op-inspct"), "NCM", occupation),
+         occupation = recode(occupation, "Transport-moving" = "PTM"),
+         native.country = ifelse(native.country != "United-States", "Others", "US"))
 
-You can also embed plots, for example:
+# Grouping "education" category: below-HS, HS-grad, Asso-prof-grad, Some College, Bachelors-and-above
+income_df = income_df %>%
+   mutate(education = ifelse(education %in% c("1st-4th","5th-6th","7th-8th","9th","10th","11th","12th","Preschool"),"Below-HS", education),
+         education = ifelse(education %in% c("Assoc-acdm", "Assoc-voc","Prof-school"), "Asso-prof-grad", education),
+         education = ifelse(education %in% c("Bachelors","Masters","Doctorate"),"Bachelor-and-above",education))
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+# Grouping "education" category: below-HS, HS-grad, Asso-prof-grad, Some College, Bachelors-and-above
+
+# recode capital gain into category (optional)
+income_df = income_df %>% 
+  mutate(capital.gain.bi = capital.gain)%>%
+  mutate(capital.gain.bi = case_when(
+      capital.gain.bi == 0 ~ "no-gain",
+      capital.gain.bi != 0 ~ "positive-gain" ))
+
+# recode capital loss into category (optional)
+income_df = income_df %>% 
+  mutate(capital.loss.bi = capital.loss)%>%
+  mutate(capital.loss.bi = case_when(
+      capital.loss.bi == 0 ~ "no-loss",
+      capital.loss.bi != 0 ~ "positive-loss" ))
+
+# recode hours.per.week into categories (optional)
+income_df = income_df %>% 
+  mutate(hours.per.week.lv = as.integer(hours.per.week))%>%
+  mutate(hours.per.week.lv = case_when(
+      hours.per.week.lv < 40 ~ "part-time",
+      hours.per.week.lv == 40 ~ "full-time",
+      hours.per.week.lv > 40  ~ "over-time"))
+
+
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+```{r}
+# recode continuous variables capital.gain, capital.loss using log transformation
+income_df = income_df %>%
+  mutate(capital.gain = as.numeric(capital.gain)) %>%
+  mutate(
+    capital.gain = log1p(capital.gain)
+  ) %>%
+  mutate(capital.loss = as.numeric(capital.loss)) %>%
+  mutate(
+    capital.loss = log1p(capital.loss)
+  )
+```
+
+```{r} 
+# Remove NA as well as small categories
+income_df = income_df %>% 
+  drop_na() %>% 
+  filter(workclass != "Without-pay") %>% 
+  filter(occupation != "Armed-Forces")%>%
+  select(-fnlwgt)
+
+# convert the dataframe into the right format for continuous/categorical variables
+income_df <- income_df %>% 
+  mutate_all(list(~gsub("\\-", "_", .))) %>% 
+  mutate_at(vars(age, education.num, capital.gain,capital.loss,hours.per.week), 
+            list(as.numeric)) %>% 
+  mutate_at(vars(workclass, marital.status, occupation,education,relationship, race, sex, native.country,capital.gain.bi,capital.loss.bi,hours.per.week.lv, income),
+            list(factor)) %>% 
+  relocate(age, education.num, capital.gain, capital.loss, hours.per.week,capital.gain.bi,capital.loss.bi,hours.per.week.lv,everything())
+```
+
+```{r}
+income_df
+```
