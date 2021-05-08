@@ -148,6 +148,49 @@ mars.pred = predict(model.mars, newdata = income2[-rowTrain,], type = "prob")[,2
 roc.mars = roc(income_df$income[-rowTrain], mars.pred)
 ```
 
+```{r glm, cache = TRUE}
+set.seed(23)
+model.glm <- train(x = x,
+                   y = y,
+                   method = "glm",
+                   trControl = ctrl, 
+                   metric = "ROC")
 
+glmnGrid <- expand.grid(.alpha = seq(0, 1, length = 6),
+                        .lambda = exp(seq(-11, -3, length = 20)))
+set.seed(23)
+model.glmn <- train(x = x,
+                    y = y,
+                    method = "glmnet",
+                    tuneGrid = glmnGrid,
+                    metric = "ROC", 
+                    trControl = ctrl)
 
+#plot(model.glmn, xTrans = function(x) log(x)) 
+```
+
+```{r lda_qda, cache = TRUE}
+set.seed(23)
+model.lda <- train(x = x,
+                   y = y,
+                   method = "lda",
+                   metric = "ROC",
+                   trControl = ctrl)
+
+set.seed(23)
+model.qda <- train(x = x,
+                   y = y,
+                   method = "qda",
+                   metric = "ROC",
+                   trControl = ctrl)
+```
+
+```{r resample}
+res <- resamples(list(MARS = model.mars,
+                      GLM = model.glm,
+                      GLMNET = model.glmn,
+                      LDA = model.lda,
+                      QDA = model.qda))
+summary(res)
+```
 
