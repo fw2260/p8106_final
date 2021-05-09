@@ -1,0 +1,22 @@
+---
+title: "Income Classification Based on the 1994 US Census"
+author: "Chong Li, Amanda Tsai, Lily Wang"
+date: "5/9/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+### Data Cleaning
+
+## Exploratory Analysis and Visualization
+
+## Models
+
+### Limitations
+
+## Conclusions
