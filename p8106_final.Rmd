@@ -105,7 +105,7 @@ income_df
 
 ```{r}
 # remove capital.gain, capital.loss,hours.per.week.lv
-income_df = income_df %>% select(-c(hours.per.week.lv, capital.gain, capital.loss))
+income_df = income_df %>% select(-c(hours.per.week.lv, capital.gain.bi, capital.loss.bi, education))
 ```
 
 ```{r partition}
