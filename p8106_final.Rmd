@@ -40,8 +40,6 @@ income_df = income_df %>%
          education = ifelse(education %in% c("Assoc-acdm", "Assoc-voc","Prof-school"), "Asso-prof-grad", education),
          education = ifelse(education %in% c("Bachelors","Masters","Doctorate"),"Bachelor-and-above",education))
 
-# Grouping "education" category: below-HS, HS-grad, Asso-prof-grad, Some College, Bachelors-and-above
-
 # recode capital gain into category (optional)
 income_df = income_df %>% 
   mutate(capital.gain.bi = capital.gain)%>%
@@ -63,8 +61,6 @@ income_df = income_df %>%
       hours.per.week.lv < 40 ~ "part-time",
       hours.per.week.lv == 40 ~ "full-time",
       hours.per.week.lv > 40  ~ "over-time"))
-
-
 ```
 
 ```{r}
