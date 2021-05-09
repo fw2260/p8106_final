@@ -8,6 +8,10 @@ knitr::opts_chunk$set(echo = TRUE,warning=FALSE,messages=FALSE)
 library(tidyverse)
 library(readxl)
 library(EnvStats)
+library(earth)
+library(caret)
+library(pROC)
+library(ggplot2)
 ```
 
 ```{r}
@@ -97,3 +101,92 @@ income_df <- income_df %>%
 ```{r}
 income_df
 ```
+
+
+```{r}
+# remove capital.gain, capital.loss,hours.per.week.lv
+income_df = income_df %>% select(-c(hours.per.week.lv, capital.gain, capital.loss))
+```
+
+```{r partition}
+# turn categorical variables into dummy variables
+income2 = model.matrix(income ~ ., income_df)[ ,-1]
+
+set.seed(23)
+rowTrain = createDataPartition(y = income_df$income,
+                                p = 0.7,
+                                list = FALSE)
+# matrix of predictors
+x = income2[rowTrain,]
+# vector of response
+y = income_df$income[rowTrain]
+
+# training control
+ctrl = trainControl(method = "cv", number = 10, 
+                    summaryFunction = twoClassSummary,
+                    classProbs = TRUE)
+
+```
+
+```{r mars, cache = TRUE}
+mars_grid = expand.grid(degree = 1:3, nprune = 2:30)
+
+set.seed(23)
+model.mars = train(x = x, 
+                 y = y,
+                 method = "earth",
+                 tuneGrid = mars_grid,
+                 metric = "ROC",
+                 trControl = ctrl)
+
+# performance with test data set 
+mars.pred = predict(model.mars, newdata = income2[-rowTrain,], type = "prob")[,2]
+roc.mars = roc(income_df$income[-rowTrain], mars.pred)
+```
+
+```{r glm, cache = TRUE}
+set.seed(23)
+model.glm <- train(x = x,
+                   y = y,
+                   method = "glm",
+                   trControl = ctrl, 
+                   metric = "ROC")
+
+glmnGrid <- expand.grid(.alpha = seq(0, 1, length = 6),
+                        .lambda = exp(seq(-11, -3, length = 20)))
+set.seed(23)
+model.glmn <- train(x = x,
+                    y = y,
+                    method = "glmnet",
+                    tuneGrid = glmnGrid,
+                    metric = "ROC", 
+                    trControl = ctrl)
+
+#plot(model.glmn, xTrans = function(x) log(x)) 
+```
+
+```{r lda_qda, cache = TRUE}
+set.seed(23)
+model.lda <- train(x = x,
+                   y = y,
+                   method = "lda",
+                   metric = "ROC",
+                   trControl = ctrl)
+
+set.seed(23)
+model.qda <- train(x = x,
+                   y = y,
+                   method = "qda",
+                   metric = "ROC",
+                   trControl = ctrl)
+```
+
+```{r resample}
+res <- resamples(list(MARS = model.mars,
+                      GLM = model.glm,
+                      GLMNET = model.glmn,
+                      LDA = model.lda,
+                      QDA = model.qda))
+summary(res)
+```
+
