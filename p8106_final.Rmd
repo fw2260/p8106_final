@@ -6,12 +6,11 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE,warning=FALSE,messages=FALSE)
 library(tidyverse)
-library(readxl)
 library(EnvStats)
 library(earth)
 library(caret)
 library(pROC)
-library(ggplot2)
+library(visdat)
 ```
 
 ```{r}
@@ -19,6 +18,12 @@ library(ggplot2)
 income_df = read.csv("adult.csv") %>% 
   mutate_all(list(~gsub("\\?", NA, .))) 
 ```
+
+```{r}
+# generate missing data visualization 
+vis_miss(income_df)
+```
+
 
 ```{r}
 # recoding and grouping categories
