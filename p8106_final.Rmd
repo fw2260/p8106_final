@@ -186,12 +186,50 @@ model.qda <- train(x = x,
                    trControl = ctrl)
 ```
 
+```{r random forest, cache =TRUE}
+rf.grid <- expand.grid(mtry = 1:8, splitrule = "gini",min.node.size = seq(from = 2, to = 10, by = 2))
+
+set.seed(1)
+rf.fit = train(x = x,
+               y = y,
+              method = "ranger",
+              tuneGrid = rf.grid,
+              metric = "ROC",
+              trControl = ctrl)
+
+
+ggplot(rf.fit, highlight = TRUE)
+
+rf.pred = predict(rf.fit, newdata = income2[-rowTrain,], type = "prob")[,1]
+```
+
+```{r boosting, cache = TRUE}
+gbmA.grid = expand.grid(n.trees = c(2000,3000,4000), 
+                        interaction.depth = 1:6,
+                        shrinkage = c(0.001,0.003,0.005), 
+                        n.minobsinnode = 1)
+set.seed(25)
+gbmA.fit <- train(x = x ,
+                  y = y,
+                  tuneGrid = gbmA.grid,
+                  trControl = ctrl,
+                  method = "gbm",
+                  distribution = "adaboost",
+                  metric = "ROC",
+                  verbose = FALSE)
+
+ggplot(gbmA.fit, highlight = TRUE)
+gbmA.pred = predict(gbmA.fit, newdata = income2[-rowTrain,], type = "prob")[,1]
+```
+
 ```{r resample}
 res <- resamples(list(MARS = model.mars,
                       GLM = model.glm,
                       GLMNET = model.glmn,
                       LDA = model.lda,
-                      QDA = model.qda))
+                      QDA = model.qda,
+                      RF = rf.fit,
+                      GBMA = gbmA.fit))
 summary(res)
 ```
 
