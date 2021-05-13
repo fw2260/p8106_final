@@ -194,7 +194,7 @@ rf.fit = train(x = x,
                y = y,
               method = "ranger",
               tuneGrid = rf.grid,
-              metric = "ROC",
+              metric = "ROC", 
               trControl = ctrl)
 
 
