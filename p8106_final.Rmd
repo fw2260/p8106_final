@@ -140,8 +140,8 @@ discrete_df =
 
 discrete_df %>% 
   ggplot(aes(x = value, y = n, fill = income)) +
-  geom_bar(position="stack", stat="identity") +
-  facet_wrap(.~predictors, scales = "free", nrow = 4) +
+  geom_bar(position=position_dodge(), stat="identity") +
+  facet_wrap(.~predictors, scales = "free", nrow = 3) +
   theme(axis.text.x = element_text(angle = 20, hjust=1)) +
   labs(x = "Predictors",
        y = "Total count")
