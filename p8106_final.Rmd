@@ -126,6 +126,7 @@ cont_df %>%
   labs(x = "Predictors",
        y = "Value")
 ```
+
 ```{r discrete, fig.align='center'}
 discrete_df = 
   income_df %>% 
