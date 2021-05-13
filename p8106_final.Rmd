@@ -11,6 +11,7 @@ library(earth)
 library(caret)
 library(pROC)
 library(visdat)
+library(vip)
 ```
 
 ```{r}
@@ -166,21 +167,6 @@ ctrl = trainControl(method = "cv", number = 10,
 
 ```
 
-```{r mars, cache = TRUE}
-mars_grid = expand.grid(degree = 1:3, nprune = 2:30)
-
-set.seed(23)
-model.mars = train(x = x, 
-                 y = y,
-                 method = "earth",
-                 tuneGrid = mars_grid,
-                 metric = "ROC",
-                 trControl = ctrl)
-
-# performance with test data set 
-mars.pred = predict(model.mars, newdata = income2[-rowTrain,], type = "prob")[,2]
-
-```
 
 ```{r glm, cache = TRUE}
 set.seed(23)
@@ -219,6 +205,19 @@ model.qda <- train(x = x,
                    trControl = ctrl)
 ```
 
+```{r mars, cache = TRUE}
+mars_grid = expand.grid(degree = 1:3, nprune = 2:30)
+
+set.seed(23)
+model.mars = train(x = x, 
+                 y = y,
+                 method = "earth",
+                 tuneGrid = mars_grid,
+                 metric = "ROC",
+                 trControl = ctrl)
+
+```
+
 ```{r random forest, cache =TRUE}
 rf.grid <- expand.grid(mtry = 1:8, splitrule = "gini",min.node.size = seq(from = 2, to = 10, by = 2))
 
@@ -233,7 +232,6 @@ rf.fit = train(x = x,
 
 ggplot(rf.fit, highlight = TRUE)
 
-rf.pred = predict(rf.fit, newdata = income2[-rowTrain,], type = "prob")[,1]
 ```
 
 ```{r boosting, cache = TRUE}
@@ -252,7 +250,7 @@ gbmA.fit <- train(x = x ,
                   verbose = FALSE)
 
 ggplot(gbmA.fit, highlight = TRUE)
-gbmA.pred = predict(gbmA.fit, newdata = income2[-rowTrain,], type = "prob")[,1]
+
 ```
 
 ```{r resample}
@@ -267,6 +265,43 @@ summary(res)
 ```
 
 ```{r test_perf, cache = TRUE}
+
+# performance with test data set 
+glm.pred = predict(model.glm, newdata = income2[-rowTrain,], type = "prob")[,2]
+glmn.pred = predict(model.glmn, newdata = income2[-rowTrain,], type = "prob")[,2]
+lda.pred = predict(model.lda, newdata = income2[-rowTrain,], type = "prob")[,2]
+qda.pred = predict(model.qda, newdata = income2[-rowTrain,], type = "prob")[,2]
+mars.pred = predict(model.mars, newdata = income2[-rowTrain,], type = "prob")[,2]
+rf.pred = predict(rf.fit, newdata = income2[-rowTrain,], type = "prob")[,1]
+gbmA.pred = predict(gbmA.fit, newdata = income2[-rowTrain,], type = "prob")[,1]
+
+# ROCs
+roc.glm = roc(income_df$income[-rowTrain], glm.pred)
+roc.glmn = roc(income_df$income[-rowTrain], glmn.pred)
+roc.lda = roc(income_df$income[-rowTrain], lda.pred)
+roc.qda = roc(income_df$income[-rowTrain], qda.pred)
 roc.mars = roc(income_df$income[-rowTrain], mars.pred)
+roc.rf = roc(income_df$income[-rowTrain], rf.pred)
+roc.gbmA <- roc(income_df$income[-rowTrain], gbmA.pred)
+
+# AUCs
+auc <- c(roc.glm$auc[1], roc.glmn$auc[1], roc.lda$auc[1], roc.qda$auc[1], 
+         roc.mars$auc[1], roc.rf$auc[1], roc.gbmA$auc[1])
+
+# AUC plot
+plot(roc.glm, legacy.axes = TRUE)
+plot(roc.glmn, col = 2, add = TRUE)
+plot(roc.lda, col = 3, add = TRUE)
+plot(roc.qda, col = 4, add = TRUE)
+plot(roc.mars, col = 5, add = TRUE)
+plot(roc.rf, col = 6, add = TRUE)
+plot(roc.gbmA, col = 7, add = TRUE)
+modelNames = c("glm", "glmn", "lda","qda", "mars", "rf", "gbmA")
+legend("bottomright", legend = paste0(modelNames, ": ", round(auc,3)),
+       col = 1:7, lwd = 2, cex = 0.8)
+```
+```{r vip}
+# variable importance 
+vip(gbmA.fit$finalModel) + ggtitle("Gradient Boosting")
 ```
 
