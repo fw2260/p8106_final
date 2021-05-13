@@ -28,10 +28,9 @@ Resources, Construction and Maintenance), PTM (Production, Transportation and Ma
 
 All levels in `marital.status` that started with “Married” were grouped into one “Married” category and all countries in `native.country` that were not “United-States” into one “Others” category.
 
-*insert missing data visualization here*
+As seen from Figure 1, only 0.9% of the data was missing from just three predictors, so the missing observations were dropped. After dropping the missing observations, the "Without-pay" category of `workclass` and "Armed-Forces" category of `occupation` had very few observations and did not logically fit in any of the other categories, thus all observations of those two categories were dropped as well. `fnlwgt`, an estimate derived such that people with similar demographic characteristics have similar weights, was dropped as it was decidedly unrelated to income.
 
-As seen from the table above, only 0.9% of the data was missing from just three predictors, so the missing observations were dropped. After dropping the missing observations, the "Without-pay" category of `workclass` and "Armed-Forces" category of `occupation` had very few observations and did not logically fit in any of the other categories, thus all observations of those two categories were dropped as well. `fnlwgt`, an estimate derived such that people with similar demographic
-characteristics have similar weights, was dropped as it was decidedly unrelated to income.
+![Missing Data](./images/missing_data.png)
 
 We also experimented with changing the continuous predictors `capital.gain` and `capital.loss` into binary (gain/loss or not) due to an excess of 0's, as well as categorizing `education` and `hours.per.week`. However, none of these transformations improved cross-validation performance, possibly due to the loss of information from categorizing numeric data. Thus we performed a log(1+x) transformation on `capital.gain` and `capital.loss` to attempt to correct for skew, kept `hours.per.week` as is, and did not include `education` (due to its redundancy with `education.num`) in the final data set.
 
@@ -60,4 +59,6 @@ Some predictors were non-normally distributed and heavily skewed, or had highly 
 
 We found that from the 1994 US census dataset, boosting as well as random forest performed the best at classifying income to less than/equal to 50k or above 50k. This result was somewhat expected given that those models utilized the "wisdom of (weighted) crowds (experts)".
 
-Some of the predictors discussed during EDA did end up becoming important predictors of income in the models, such as being male and being a wife (and years of education, hours worked per week, and age in the logistic regression model), which mostly make sense logically and have been found to have an effect on income through various studies.
+From the above results, some predictors for income >=50k align well with traditional wisdom. For instance, having gone to college (education.num>13) is considered to be a gateway for higher earning; the gender wage gap is very apparent with males much likely to earn more; the type of occupation also generally corresponds with earnings. In addition, results such as having non-zero capital gain OR loss contribute to higher earnings is surprising but reasonable: people who make more money tend to have an investment portfolio which would lead to passive income (or losses). Lastly, individual’s age does positively correlate with income potential.
+
+In addition, the regression results also give me a number of results that we were not expecting. For starters, staying in marriage being the most important predictor of income greater than 50K. One potential cause of this relationship that I can think of is that married couples are generally entitled to more favorable tax laws. People who are never married are also less likely to make more than 50K than divorced/separated/widowed individuals. Part of this might be explained that unmarried individuals are on the younger end (increase age does positively correspond to earnings), but it could also be for other reasons that warrant further investigation.

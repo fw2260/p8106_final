@@ -301,6 +301,7 @@ modelNames = c("glm", "glmn", "lda","qda", "mars", "rf", "gbmA")
 legend("bottomright", legend = paste0(modelNames, ": ", round(auc,3)),
        col = 1:7, lwd = 2, cex = 0.8)
 ```
+
 ```{r vip}
 # variable importance 
 vip(gbmA.fit$finalModel) + ggtitle("Gradient Boosting")
