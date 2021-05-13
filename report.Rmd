@@ -39,6 +39,11 @@ After the cleaning process outlined above, the final data set that we will perfo
 
 ## Exploratory Analysis and Visualization
 
+Among the continuous predictors, we can see that the age for those with incomes less than 50k per year is skewed younger. The age for those with incomes greater than 50k per year is relatively more normally distributed and the median age is higher than that of the other group. Within capital gain and capital loss, we can see that the values for these two predictors are both heavily skewed towards 0 for both income groups. Looking at the number of years of education, we can see that for those with incomes greater than 50k, the number of years is skewed higher, with the majority of observations having at least 8 years of education and close to half having more than 12. The education years for people with incomes less than 50k is more normally distributed, with the median being around 8 to 9 years of education, and less observations with over 12 years of education. We can also observe that those with incomes greater than 50k tend to work more hours per week. 
+
+Among the categorical predictors, we can see greater discrepancies in martial status, occupation, race, relationship and sex between the two income groups. Those with incomes greater than 50k per year tend to be married, with occupations in the MBSA category, white, male and husband of the household. Though the majority of these people are also native to the US and working in private companies, the ratio between the two income groups is similar for US and other country natives, as well as government, private and self-employed jobs, so a clear trend can't be identified for the `native.country` and `workclass` predictors. 
+
+
 ## Models
 
 ### Model Selection
@@ -47,5 +52,8 @@ All categorical predictors were turned into dummy variables and the data set was
 
 
 ### Limitations
+
+Some predictors were non-normally distributed and heavily skewed, or had highly imbalanced classes. This may have affected the model performances for LDA and QDA, as both models assume the observations to be normally distributed. 
+
 
 ## Conclusions
