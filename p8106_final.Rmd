@@ -216,6 +216,7 @@ model.mars = train(x = x,
                  metric = "ROC",
                  trControl = ctrl)
 
+# ggplot(model.mars, highlight = TRUE)
 ```
 
 ```{r random forest, cache =TRUE}
