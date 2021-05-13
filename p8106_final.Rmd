@@ -24,7 +24,6 @@ income_df = read.csv("adult.csv") %>%
 vis_miss(income_df)
 ```
 
-
 ```{r}
 # recoding and grouping categories
 # 1. rename income variables
@@ -113,6 +112,38 @@ income_df
 income_df = income_df %>% select(-c(hours.per.week.lv, capital.gain.bi, capital.loss.bi, education))
 ```
 
+```{r continuous, fig.align='center'}
+cont_df = income_df %>% 
+  select(age, education.num, capital.gain,
+         capital.loss, hours.per.week, income) %>% 
+  pivot_longer(age:hours.per.week,
+               names_to = "predictors",
+               values_to = "value")
+cont_df %>% 
+  ggplot(aes(x = predictors, y = value, fill = income)) +
+  geom_violin() +
+  facet_wrap(.~predictors, scales = "free", nrow = 3) +
+  labs(x = "Predictors",
+       y = "Value")
+```
+```{r discrete, fig.align='center'}
+discrete_df = 
+  income_df %>% 
+  select_if(is.factor) %>% 
+  pivot_longer(workclass:native.country,
+               names_to = "predictors",
+               values_to = "value") %>% 
+  group_by(income, predictors) %>% 
+  count(value)
+discrete_df %>% 
+  ggplot(aes(x = value, y = n, fill = income)) +
+  geom_bar(position="stack", stat="identity") +
+  facet_wrap(.~predictors, scales = "free", nrow = 4) +
+  theme(axis.text.x = element_text(angle = 20, hjust=1)) +
+  labs(x = "Predictors",
+       y = "Total count")
+```
+
 ```{r partition}
 # turn categorical variables into dummy variables
 income2 = model.matrix(income ~ ., income_df)[ ,-1]
@@ -146,7 +177,7 @@ model.mars = train(x = x,
 
 # performance with test data set 
 mars.pred = predict(model.mars, newdata = income2[-rowTrain,], type = "prob")[,2]
-roc.mars = roc(income_df$income[-rowTrain], mars.pred)
+
 ```
 
 ```{r glm, cache = TRUE}
@@ -231,5 +262,9 @@ res <- resamples(list(MARS = model.mars,
                       RF = rf.fit,
                       GBMA = gbmA.fit))
 summary(res)
+```
+
+```{r test_perf, cache = TRUE}
+roc.mars = roc(income_df$income[-rowTrain], mars.pred)
 ```
 
