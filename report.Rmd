@@ -48,10 +48,17 @@ Among the categorical predictors, we can see from Figure 3 that there exists gre
 
 ## Models
 
+### Predictor Variables
+
+For the final models, 13 predictor variables were used in total. The five continuous variables are `age`, `education.num`, `capital.gain`, `capital.loss`, and `hours.per.week`. The nine categorical variables are `workclass`, `marital.status`, `occupation`, `relationship`, `race`, `sex`, and `native.country`.
+
 ### Model Selection
 
 All categorical predictors were turned into dummy variables and the data set was split into 70:30 training to test data. The training data with all predictors was then trained on a variety of models with ranging flexibility and assumptions: logistic regression, elastic net, LDA, QDA, MARS, and Random Forest (including bagging and boosting). The cross-validation and test AUC results are shown below:
 
+### Model Assumptions
+
+### Tuning Parameters
 
 ### Limitations
 
@@ -60,10 +67,10 @@ Some predictors were non-normally distributed and heavily skewed, or had highly 
 
 ## Conclusions
 
-We found that from the 1994 US census dataset, random forest (bagging and boosting) performed the best at classifying income to less than/equal to 50k or above 50k. This result was somewhat expected given that those models utilized the "wisdom of (weighted) crowds (experts)".
+We found that from the 1994 US Census Dataset, random forest (bagging and boosting) performed the best at classifying income to less than/equal to 50k or above 50k. This result was somewhat expected given that those models utilized the "wisdom of (weighted) crowds (experts)" in comparison to other models used.
 
-From the above results, some predictors for a person making greater/less than $50,000 a year align well with conventional beliefs. For instance, having higher education and advanced degrees is certainly a gateway for higher earnings; younger people who just joined the workforce would have less of a chance of making more than 50k; the gender wage gap is very apparent with males much likely to earn more; and the type of occupation also correlates with earning levels. In addition, some results such as having higher capital gain OR loss both contribute to higher earnings might seem surprising at first but are in fact reasonable. People with higher earning potentials (higher education etc.) tend to have both the knowledge and ability to pursue passive income from capital investments. While there are volatility in the world of investment which might lead to unexpected gain or loses in one year (1994), having a passive income portfolio still does lead to higher life-time earnings in the long run.
+From our models, some predictors for a person making greater/less than $50,000 a year align well with conventional beliefs. For instance, having higher education and advanced degrees is certainly a gateway for higher earnings; younger people who just joined the workforce would have less of a chance of making more than \$50k; the gender wage gap is very apparent with males much likely to earn more; and the type of occupation also correlates with earning levels. In addition, some results such as having higher capital gain OR loss both contribute to higher earnings might seem surprising at first but are in fact reasonable. People with higher earning potentials (higher education etc.) tend to have both the knowledge and ability to pursue passive income from capital investments. While there are volatility in the world of investment which might lead to unexpected gain or loses in one year (1994), having a passive income portfolio still does lead to higher life-time earnings in the long run.
 
-On the other hand, the models also produced a number of results that we were not expecting. For example, staying in a marriage was proven to be the most important predictor of having income greater than 50k. One potential cause that could explain this relationship is that married couples are sometimes entitled to more favorable tax laws. Another possible explanation could be that people with higher incomes are more likely to find a partner and get married. Although staying in marriage is an important factor, those who have married in the past (divorced/separated/widowed) individuals are also more likely to have more than 50k income than never-married people. Part of this effect could be attributed to the fact that unmarried individuals are on the younger end (increase age does positively correspond to earnings), but it could also be for other reasons that warrant further investigation.
+On the other hand, the models also produced a number of results that we were not expecting. For example, staying in a marriage was proven to be the most important predictor of having income greater than \$50k. One potential cause that could explain this relationship is that married couples are sometimes entitled to more favorable tax laws. Another possible explanation could be that people with higher incomes are more likely to find a partner and get married. Although staying in marriage is an important factor, those who have married in the past (divorced/separated/widowed) are also more likely to have more than \$50k income than never-married people. Part of this effect could be attributed to the fact that unmarried individuals are on the younger end (increase age does positively correspond to earnings), but it could also be for other reasons that warrant further investigation.
 
 
