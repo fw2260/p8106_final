@@ -57,3 +57,7 @@ Some predictors were non-normally distributed and heavily skewed, or had highly 
 
 
 ## Conclusions
+
+We found that from the 1994 US census dataset, boosting as well as random forest performed the best at classifying income to less than/equal to 50k or above 50k. This result was somewhat expected given that those models utilized the "wisdom of (weighted) crowds (experts)".
+
+Some of the predictors discussed during EDA did end up becoming important predictors of income in the models, such as being male and being a wife (and years of education, hours worked per week, and age in the logistic regression model), which mostly make sense logically and have been found to have an effect on income through various studies.
