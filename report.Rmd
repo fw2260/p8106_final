@@ -55,16 +55,18 @@ For the final models, 13 predictor variables were used in total. The five contin
 ### Model Selection
 All categorical predictors were turned into dummy variables and the data set was split into 70:30 training to test data. The training data with all predictors was then trained on a variety of models with ranging flexibility and assumptions: logistic regression, elastic net, LDA, QDA, MARS, and Random Forest (including bagging and boosting). The cross-validation and test AUC results are shown below:
 
+### Tuning Parameters
+
 ### Model Assumptions
-For models such as logistic regression and discriminant analysis, we assume that the predictor variables to be multivariate normal. These models also require the predictor variables as well as the residuals to not be highly correlated with each other. Furthermore, the variance term should be normally distributed and constant across all values of the predictor variables. While these assumptions are specified, the models listed above can still be quite robust even when they are slightly violated. For instance, LDA can still work for non-normal data by Fisher's argument.
+For models such as logistic regression and discriminant analysis, we assume that the predictor variables to be multivariate normal. These models also require the predictor variables as well as the residuals to not be highly correlated with each other. Furthermore, the variance term should be normally distributed and constant across all values of the predictor variables. While these assumptions are specified, the models listed above can still be quite robust even when they are slightly violated. For instance, LDA can still work relatively well for non-normal data according to Fisher's principles
 
 For decision tree based model such as random forest, since no probabilistic model is needed with its use of binary splits, no assumption is needed as long as the sampling is representative. 
 
-### Tuning Parameters
+### Model Findings
 
 ### Limitations
 Some predictors were non-normally distributed and heavily skewed, or had highly imbalanced classes. This may have affected the model performances for LDA and QDA, as both models assume the observations to be normally distributed. 
-
+Moreover, imbalance classes such as `race` with a vast majority of observations to be white, it is likely that the analysis does not sufficiently capture the relationship between race and likelihood for higher income.
 
 ## Conclusions
 
