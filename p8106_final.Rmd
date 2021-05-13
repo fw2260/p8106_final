@@ -136,6 +136,7 @@ discrete_df =
                values_to = "value") %>% 
   group_by(income, predictors) %>% 
   count(value)
+
 discrete_df %>% 
   ggplot(aes(x = value, y = n, fill = income)) +
   geom_bar(position="stack", stat="identity") +

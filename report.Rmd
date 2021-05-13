@@ -53,4 +53,7 @@ All categorical predictors were turned into dummy variables and the data set was
 
 ### Limitations
 
+Some predictors were non-normally distributed and heavily skewed, or had highly imbalanced classes. This may have affected the model performances for LDA and QDA, as both models assume the observations to be normally distributed. 
+
+
 ## Conclusions
