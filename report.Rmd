@@ -108,5 +108,5 @@ In conclusion, our analysis through using the 1994 Census Data provides us with 
 ![Variable Importance for Best Performing Model](./images/vip.png)
 
 ![Random Forest](./images/rf_fit.png)
-
+![Gradient Boosting](./images/gbma_fit.png)
 
