@@ -262,15 +262,12 @@ res <- resamples(list(MARS = model.mars,
                       RF = rf.fit,
                       GBMA = gbmA.fit))
 summary(res)
+bwplot(res, metric = "ROC")
 ```
 
 ```{r test_perf, cache = TRUE}
-<<<<<<< HEAD
-# performance with test data set
-=======
-
 # performance with test data set 
->>>>>>> ff6723001a34d4a857ae9b9f244a8cf82c7f62b5
+
 glm.pred = predict(model.glm, newdata = income2[-rowTrain,], type = "prob")[,2]
 glmn.pred = predict(model.glmn, newdata = income2[-rowTrain,], type = "prob")[,2]
 lda.pred = predict(model.lda, newdata = income2[-rowTrain,], type = "prob")[,2]
@@ -278,10 +275,7 @@ qda.pred = predict(model.qda, newdata = income2[-rowTrain,], type = "prob")[,2]
 mars.pred = predict(model.mars, newdata = income2[-rowTrain,], type = "prob")[,2]
 rf.pred = predict(rf.fit, newdata = income2[-rowTrain,], type = "prob")[,1]
 gbmA.pred = predict(gbmA.fit, newdata = income2[-rowTrain,], type = "prob")[,1]
-<<<<<<< HEAD
-=======
 
->>>>>>> ff6723001a34d4a857ae9b9f244a8cf82c7f62b5
 # ROCs
 roc.glm = roc(income_df$income[-rowTrain], glm.pred)
 roc.glmn = roc(income_df$income[-rowTrain], glmn.pred)
@@ -290,17 +284,11 @@ roc.qda = roc(income_df$income[-rowTrain], qda.pred)
 roc.mars = roc(income_df$income[-rowTrain], mars.pred)
 roc.rf = roc(income_df$income[-rowTrain], rf.pred)
 roc.gbmA = roc(income_df$income[-rowTrain], gbmA.pred)
-<<<<<<< HEAD
-# AUCs
-auc <- c(roc.glm$auc[1], roc.glmn$auc[1], roc.lda$auc[1], roc.qda$auc[1],
-         roc.mars$auc[1], roc.rf$auc[1], roc.gbmA$auc[1])
-=======
 
 # AUCs
 auc <- c(roc.glm$auc[1], roc.glmn$auc[1], roc.lda$auc[1], roc.qda$auc[1], 
          roc.mars$auc[1], roc.rf$auc[1], roc.gbmA$auc[1])
 
->>>>>>> ff6723001a34d4a857ae9b9f244a8cf82c7f62b5
 # AUC plot
 plot(roc.glm, legacy.axes = TRUE)
 plot(roc.glmn, col = 2, add = TRUE)
@@ -313,16 +301,10 @@ modelNames = c("glm", "glmn", "lda","qda", "mars", "rf", "gbmA")
 legend("bottomright", legend = paste0(modelNames, ": ", round(auc,3)),
        col = 1:7, lwd = 2, cex = 0.8)
 ```
-<<<<<<< HEAD
+
+
 ```{r vip}
 # variable importance
 vip(gbmA.fit$finalModel) + ggtitle("Gradient Boosting")
 ```
-=======
 
-```{r vip}
-# variable importance 
-vip(gbmA.fit$finalModel) + ggtitle("Gradient Boosting")
-```
-
->>>>>>> ff6723001a34d4a857ae9b9f244a8cf82c7f62b5
