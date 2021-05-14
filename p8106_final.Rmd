@@ -118,7 +118,7 @@ cont_df = income_df %>%
                values_to = "value")
 cont_df %>% 
   ggplot(aes(x = predictors, y = value, fill = income)) +
-  geom_violin() +
+  geom_boxplot() +
   facet_wrap(.~predictors, scales = "free", nrow = 3) +
   labs(x = "Predictors",
        y = "Value")
