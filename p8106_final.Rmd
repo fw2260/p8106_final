@@ -119,7 +119,7 @@ cont_df = income_df %>%
 cont_df %>% 
   ggplot(aes(x = predictors, y = value, fill = income)) +
   geom_boxplot() +
-  facet_wrap(.~predictors, scales = "free", nrow = 3) +
+  facet_wrap(.~predictors, scales = "free", nrow = 2) +
   labs(x = "Predictors",
        y = "Value")
 ```
