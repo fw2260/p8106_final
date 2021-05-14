@@ -78,6 +78,10 @@ Some predictors were non-normally distributed and heavily skewed, or had highly 
 
 Moreover, with imbalanced classes such as `race` with a vast majority of observations to be white, it is likely that the analysis does not sufficiently capture the relationship between race and likelihood for higher income.
 
+Also, the possible existence of multicollinearity could violate the assumptions of models like GLM and LDA, and undermine their performance more than other models like Mars and Random Forest.
+
+There were limitations to the models themselves that may have impacted their performance on our data. Logistic regression models assume a linear relationship between the response and predictors and thus cannot capture any non-linear terms or interaction terms that may exist. The tuning of the boosting grid for random forest posed to be another issue as the boosting model took a long time to run and hindered our chances of finding a better tuning parameter. 
+
 ## Conclusions
 
 We found that from the 1994 US Census Dataset, random forest (specifically boosting) performed the best at classifying income to less than/equal to 50k or greater than 50k. This result was somewhat expected given that those models are ensemble models that utilized the "wisdom of (weighted) crowds (experts)" to decrease variance and bias as well as improving predictions.
