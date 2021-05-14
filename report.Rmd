@@ -32,7 +32,7 @@ Data source: https://www.kaggle.com/uciml/adult-census-income/
 
 ## Data Cleaning
 
-Many categorical predictors contained numerous levels (e.g. `native.country` contained 42). This meant that some levels ultimately have very few observations, especially in cases where the distributions were skewed. This poses an issue in data partitioning later on because oftentimes, the observations of a level could be allocated entirely to the training or testing data set. To remedy this issue, the levels of the predictors that contained more than 5 levels were grouped based on logical sense.
+Many categorical predictors contain numerous levels (e.g. `native.country` contained 42). This fact means that some levels ultimately have very few observations, especially in cases where the distributions were skewed. This poses an issue in data partitioning later on because oftentimes, the observations of a level can potentially be allocated entirely to the training or testing data set. To remedy this issue, the levels of the predictors that contained more than 5 levels were grouped based on logical sense.
 
 For `workclass`, all government jobs were combined into one category, and all self-employed jobs into another.
 
@@ -53,7 +53,7 @@ Among the continuous predictors, we can see that from Figure 2 the age for those
 
 Among the categorical predictors, we can see from Figure 3 that there exists greater discrepancies in marital status, occupation, race, relationship and sex between the two income groups. Those with incomes greater than 50k per year tend to be married, with occupations in the MBSA category, white, male, and husband of the household. Though the majority of these people are also native to the US and working in private companies, the ratio between the two income groups is similar for US and other country natives, as well as government, private and self-employed jobs, so a clear trend can't be identified for the `native.country` and `workclass` predictors. 
 
-The predictors, as shown in Figure 4, mainly do not appear to be heavily correlated aside from `marital status` and `relationship`. This correlation is expected as `relationship` depends on ones' family structure, which is reflected by `marital status`.
+The predictors, as shown in Figure 4, mostly do not appear to be heavily correlated aside from `marital status` and `relationship`. This correlation is expected as `relationship` depends on ones' family structure, which is reflected by `marital status`.
 
 
 ## Models
@@ -87,9 +87,9 @@ There were limitations to the models themselves that may have impacted their per
 
 We found that from the 1994 US Census Dataset, random forest (specifically boosting) performed the best at classifying income to less than/equal to 50k or greater than 50k. This result was somewhat expected given that those models are ensemble models that utilized the "wisdom of (weighted) crowds (of experts)" to decrease variance and bias as well as improving predictions.
 
-From our models, some predictors for a person making greater/less than $50,000 a year align well with conventional beliefs. For instance, having higher education and advanced degrees is certainly a gateway for higher earnings; younger people who just joined the workforce would have less of a chance of making more than \$50k; the gender wage gap is very apparent with males much likely to earn more; and the type of occupation also correlates with earning levels. In addition, some results such as having higher capital gain OR loss both contribute to higher earnings might seem surprising at first but are in fact reasonable. People with higher earning potentials (higher education etc.) tend to have both the knowledge and ability to pursue passive income from capital investments. While there are volatility in the world of investment which might lead to unexpected gain or loses in one year (1994), having a passive income portfolio still does lead to higher life-time earnings in the long run.
+From our models, some predictors for a person making greater/less than $50,000 a year align well with conventional beliefs. For instance, having higher education and advanced degrees is certainly a gateway for higher earnings; younger people who just joined the workforce would have less of a chance of making more than \$50k; the type of occupation contributes significantly to predicting one's income; the gender wage gap is also apparent with males much likely to earn more. In addition, some results such as having higher capital gain OR loss both contribute to higher earnings might seem surprising at first but are in fact reasonable. People with higher earning potentials (higher education etc.) tend to have both the knowledge and ability to pursue passive income from capital investments. While there are volatility in the world of investment which might lead to unexpected gain or loses in one year (1994), having a passive income portfolio still does lead to higher life-time earnings in the long run.
 
-On the other hand, the models also produced a number of results that we were not expecting. For example, staying in a marriage was proven to be the most important predictor of having income greater than \$50k. One potential cause that could explain this relationship is that married couples are sometimes entitled to more favorable tax laws. Another possible explanation could be that people with higher incomes are more likely to find a partner and get married. Although staying in marriage is an important factor, those who have married in the past (divorced/separated/widowed) are also more likely to have more than \$50k income than never-married people. Part of this effect could be attributed to the fact that unmarried individuals are on the younger end (increase age does positively correspond to earnings), but it could also be for other reasons that warrant further investigation.
+On the other hand, the models also produced a number of results that we were not expecting. For example, staying in a marriage was proven to be the most important predictor of having income greater than \$50k. One potential cause that could explain this relationship is that married couples are sometimes entitled to more favorable tax laws. Another possible explanation could be that people with higher incomes are more likely to find a partner and get married. Although staying in marriage is an important factor, those who have married in the past (divorced/separated/widowed) are also more likely to have more than \$50k income than never-married people. Part of this effect could be attributed to the fact that unmarried individuals are on the younger end (increase age does positively correspond to earnings), but it could also be for other reasons that warrant further investigation. 
 
 In conclusion, our analysis through using the 1994 Census Data provides us with many interesting insights to the underlying factors behind income inequalities. Being in a stable marriage turns out to be one of the more important determining factor in predicting one’s income. In addition, at the time this data was gathered, there did exist a sizable gender gap in terms of income. Furthermore, people who have the ability and awareness to participate in investment, even when return is negative, tend to be more likely to earn more money. However, due to the low number of observations from non-white races or non-native immigrants, our analysis does not provide adequate information for the role that race and immigrant status play in determining income levels. 
 
@@ -97,11 +97,11 @@ In conclusion, our analysis through using the 1994 Census Data provides us with 
 
 ![Missing Data](./images/missing_data.png){width=75%,height=50%}
 
-![Continuous Predictors Exploratory Analysis](./images/exploratory_box_plot.png){width=75%,height=50%}
+![Continuous Predictors Exploratory Analysis](./images/boxplot.png){width=75%,height=50%}
 
 ![Categorical Predictors Exploratory Analysis](./images/exploratory_bar_graph.png){width=75%,height=50%}
 
-![Correlation Plot](./images/corr_plot.png){width=75%,height=50%}
+![Predictor Correlation Plot](./images/corr_plot.png){width=75%,height=50%}
 
 ![ROC Curves for All Trained Models](./images/roc_curve.png){width=75%,height=50%}
 
