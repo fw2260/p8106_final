@@ -97,4 +97,12 @@ In conclusion, our analysis through using the 1994 Census Data provides us with 
 ![Categorical Predictors Exploratory Analysis](./images/exploratory_bar_graph.png)
 
 ![Correlation Plot](./images/corr_plot.png)
+![ROC Curves for All Trained Models](./images/roc_curve.png)
+
+![Resampling Model Performance](./images/resampling.png)
+
+![Variable Importance for Best Performing Model](./images/vip.png)
+
+![Random Forest](./images/rf_fit.png)
+
 
