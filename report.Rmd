@@ -68,11 +68,15 @@ All categorical predictors were turned into dummy variables and the data set was
 An optimal grid for was picked by graphing the cross-validated AUC and tuning the ranges of the various parameters of the grid so that the point at which AUC was maximized was contained well within the graph, instead of on the boundaries. Specifically for boosting, the parameters that were tuned were number of trees (B), shrinkage ($\lambda$), and interaction depth (d).
 
 ### Model Assumptions
-Both logistic regression and discriminant analysis require independence and little to no multicollinearity. Discriminant analysis furthermore assumes multivariate normality and homoscedasticity.   While these assumptions are specified, the models listed above can still be quite robust even when they are slightly violated. For instance, LDA can still work relatively well for non-normal data according to Fisher's principles.
+Both logistic regression and discriminant analysis require independence and little to no multicollinearity. Discriminant analysis furthermore assumes multivariate normality and homoscedasticity. While these assumptions are specified, the models listed above can still be quite robust even when they are slightly violated. For instance, LDA can still work relatively well for non-normal data according to Fisher's principles.
 
 For decision tree based model such as random forest, since no probabilistic model is needed with its use of binary splits, no assumption is needed as long as the sampling is representative. 
 
 ### Model Findings
+While all models performed very well in classifying income on the training and testing datasets with AUC > 80, the boosting model was the best-performing model on both training and testing datasets. For the boosting model, as shown in Figure 7, the most important predictors used were `marital status`, `education.num`, `capital.gain`,`age`, `hours.per.week` and `occupation`. 
+
+Non-black box model such as logistical regression also shows a similar picture in terms variable importance. The coefficient estimates demonstrate relatively larger changes in the log odds of income level are associated with a change in marital status from the referenced “Divorced” to “Married” (an increase), occupation change from “MBSA” to “Service” (decrease), relationship status change from “Husband” to “Not-in-family”(decrease), and sex from “Female” to “Male” (increase). For continuous variables, one unit increase in age, capital gain and capital loss also lead to an increase of log odds.
+
 
 ### Limitations
 Some predictors were non-normally distributed and heavily skewed, or had highly imbalanced classes. This may have affected the model performances for LDA and QDA, as both models assume the observations to be somewhat normally distributed. 
@@ -81,7 +85,7 @@ Moreover, with imbalanced classes such as `race` with a vast majority of observa
 
 Also, the possible existence of multicollinearity could violate the assumptions of models like GLM and LDA, and undermine their performance more than other models like Mars and Random Forest.
 
-There were limitations to the models themselves that may have impacted their performance on our data. Logistic regression models assume a linear relationship between the response and predictors and thus cannot capture any non-linear terms or interaction terms that may exist. The tuning of the boosting grid for random forest posed to be another issue as the boosting model took a long time to run and hindered our chances of finding a better tuning parameter. 
+There were limitations to the models themselves that may have impacted their performance on our data. Logistic regression models assume a linear relationship between the response and predictors and thus cannot capture any non-linear terms or interaction terms that may exist. The tuning of the boosting grid for random forest posed to be another issue as the boosting model took a long time to run and hindered our chances of finding a better tuning parameter (Figure 8).
 
 ## Conclusions
 
@@ -92,6 +96,8 @@ From our models, some predictors for a person making greater/less than $50,000 a
 On the other hand, the models also produced a number of results that we were not expecting. For example, staying in a marriage was proven to be the most important predictor of having income greater than \$50k. One potential cause that could explain this relationship is that married couples are sometimes entitled to more favorable tax laws. Another possible explanation could be that people with higher incomes are more likely to find a partner and get married. Although staying in marriage is an important factor, those who have married in the past (divorced/separated/widowed) are also more likely to have more than \$50k income than never-married people. Part of this effect could be attributed to the fact that unmarried individuals are on the younger end (increase age does positively correspond to earnings), but it could also be for other reasons that warrant further investigation. 
 
 In conclusion, our analysis through using the 1994 Census Data provides us with many interesting insights to the underlying factors behind income inequalities. Being in a stable marriage turns out to be one of the more important determining factor in predicting one’s income. In addition, at the time this data was gathered, there did exist a sizable gender gap in terms of income. Furthermore, people who have the ability and awareness to participate in investment, even when return is negative, tend to be more likely to earn more money. However, due to the low number of observations from non-white races or non-native immigrants, our analysis does not provide adequate information for the role that race and immigrant status play in determining income levels. 
+
+\newpage
 
 ## Appendices
 
