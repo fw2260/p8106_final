@@ -93,30 +93,22 @@ On the other hand, the models also produced a number of results that we were not
 
 In conclusion, our analysis through using the 1994 Census Data provides us with many interesting insights to the underlying factors behind income inequalities. Being in a stable marriage turns out to be one of the more important determining factor in predicting one’s income. In addition, at the time this data was gathered, there did exist a sizable gender gap in terms of income. Furthermore, people who have the ability and awareness to participate in investment, even when return is negative, tend to be more likely to earn more money. However, due to the low number of observations from non-white races or non-native immigrants, our analysis does not provide adequate information for the role that race and immigrant status play in determining income levels. 
 
-## Figures and Graphs
+## Appendices
 
-![Missing Data](./images/missing_data.png)
-Figure 1. Missing data visualization
+![Missing Data Visualization](./images/missing_data.png){width=75%,height=50%}
 
-![Continuous Predictors Exploratory Analysis](./images/exploratory_box_plot.png)
-Figure 2. Box plots of distribution of numeric predictors by income class.
+![Continuous Predictors by Income Exploratory Analysis](./images/exploratory_box_plot.png){width=75%,height=50%}
 
-![Categorical Predictors Exploratory Analysis](./images/exploratory_bar_graph.png)
-Figure 3. Bar graphs of discrete predictors by income class.
+![Categorical Predictors by Income Exploratory Analysis](./images/exploratory_bar_graph.png){width=75%,height=50%}
 
-![Correlation Plot](./images/corr_plot.png)
-Figure 4. Correlation plot of all predictors.
+![Correlation Plot of All Predictors](./images/corr_plot.png){width=75%,height=50%}
 
-![Resampling Model Performance](./images/resampling.png)
-Figure 5. Cross-validation AUC of all trained models on training data set.
+![Resampling Model Performance on Training Data](./images/resampling.png){width=75%,height=50%}
 
-![ROC Curves for All Trained Models](./images/roc_curve.png)
-Figure 6. ROC plot of all trained models on test data set.
+![ROC Curves for All Trained Models on Test Data](./images/roc_curve.png){width=75%,height=50%}
 
-![Variable Importance for Best Performing Model](./images/vip.png)
-Figure 7. Variable Importance Plot of boosting model.
+![Variable Importance for Best Performing Model (Boosting)](./images/vip.png){width=75%,height=50%}
 
 ![Random Forest](./images/rf_fit.png)
 
-![Gradient Boosting](./images/gbma_fit.png)
-
+![Gradient Boosting](./images/gbma_fit.png){width=75%,height=50%}
