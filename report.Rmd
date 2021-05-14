@@ -51,23 +51,24 @@ After the cleaning process outlined above, the final data set that we will perfo
 
 Among the continuous predictors, we can see that from Figure 2 the age for those with incomes less than 50k per year is skewed younger. The age for those with incomes greater than 50k per year is relatively more normally distributed and the median age is higher than that of the other group. Within capital gain and capital loss, we can see that the values for these two predictors are both heavily skewed towards 0 with a light right-tail for both income groups. Looking at the number of years of education, we can see that for those with incomes greater than 50k, the number of years is skewed higher, with the majority of observations having at least 8 years of education and close to half having more than 12. The education years for people with incomes less than 50k is more normally distributed, with the median being around 8 to 9 years of education, and less observations with over 12 years of education. We can also observe that those with incomes greater than 50k tend to work more hours per week. 
 
-Among the categorical predictors, we can see from Figure 3 that there exists greater discrepancies in martial status, occupation, race, relationship and sex between the two income groups. Those with incomes greater than 50k per year tend to be married, with occupations in the MBSA category, white, male and husband of the household. Though the majority of these people are also native to the US and working in private companies, the ratio between the two income groups is similar for US and other country natives, as well as government, private and self-employed jobs, so a clear trend can't be identified for the `native.country` and `workclass` predictors. 
+Among the categorical predictors, we can see from Figure 3 that there exists greater discrepancies in marital status, occupation, race, relationship and sex between the two income groups. Those with incomes greater than 50k per year tend to be married, with occupations in the MBSA category, white, male, and husband of the household. Though the majority of these people are also native to the US and working in private companies, the ratio between the two income groups is similar for US and other country natives, as well as government, private and self-employed jobs, so a clear trend can't be identified for the `native.country` and `workclass` predictors. 
 
-The predictors as shown in Figure 4, does not appear to be heavily correlated aside from a `marital status` and `relationship`. This correlation is expected as `relationship` depends on ones' family structure, which is reflected by `marital status`.
+The predictors, as shown in Figure 4, mainly do not appear to be heavily correlated aside from `marital status` and `relationship`. This correlation is expected as `relationship` depends on ones' family structure, which is reflected by `marital status`.
 
 
 ## Models
 
 ### Predictor Variables
-For the final models, 13 predictor variables were used in total. The five continuous variables are `age`, `education.num`, `capital.gain`, `capital.loss`, and `hours.per.week`. The nine categorical variables are `workclass`, `marital.status`, `occupation`, `relationship`, `race`, `sex`, and `native.country`.
+For the final models, 12 predictor variables were used in total. The five continuous variables are `age`, `education.num`, `capital.gain`, `capital.loss`, and `hours.per.week`. The seven categorical variables are `workclass`, `marital.status`, `occupation`, `relationship`, `race`, `sex`, and `native.country`.
 
 ### Model Selection
-All categorical predictors were turned into dummy variables and the data set was split into 70:30 training to test data. The training data with all predictors was then trained on a variety of models with ranging flexibility and assumptions: logistic regression, elastic net, LDA, QDA, MARS, and Random Forest (including bagging and boosting). The cross-validation and test AUC results are shown below:
+All categorical predictors were turned into dummy variables and the data set was split into 70:30 training to test data. The training data with all predictors was then trained on a variety of models with ranging flexibility and assumptions: logistic regression, elastic net, LDA, QDA, MARS, and Random Forest (including bagging and boosting). The cross-validation and test AUC results are shown below in Figures 5 and 6.
 
 ### Tuning Parameters
+An optimal grid for was picked by graphing the cross-validated AUC and tuning the ranges of the various parameters of the grid so that the point at which AUC was maximized was contained well within the graph, instead of on the boundaries. Specifically for boosting, the parameters that were tuned were number of trees (B), shrinkage ($\lambda$), and interaction depth (d).
 
 ### Model Assumptions
-For models such as logistic regression and discriminant analysis, we assume that the continuous predictor variables to be multivariate normal. These models also require the predictor variables as well as the residuals to not be highly correlated with each other. Furthermore, the variance term should be normally distributed and constant across all values of the predictor variables. While these assumptions are specified, the models listed above can still be quite robust even when they are slightly violated. For instance, LDA can still work relatively well for non-normal data according to Fisher's principles.
+Both logistic regression and discriminant analysis require independence and little to no multicollinearity. Discriminant analysis furthermore assumes multivariate normality and homoscedasticity.   While these assumptions are specified, the models listed above can still be quite robust even when they are slightly violated. For instance, LDA can still work relatively well for non-normal data according to Fisher's principles.
 
 For decision tree based model such as random forest, since no probabilistic model is needed with its use of binary splits, no assumption is needed as long as the sampling is representative. 
 
@@ -80,7 +81,7 @@ Moreover, with imbalanced classes such as `race` with a vast majority of observa
 
 ## Conclusions
 
-We found that from the 1994 US Census Dataset, random forest (specifically boosting) performed the best at classifying income to less than/equal to 50k or greater than 50k. This result was somewhat expected given that those models are ensemble models that utilized the "wisdom of (weighted) crowds (experts)" to decrease variance and bias as well as improving predictions.
+We found that from the 1994 US Census Dataset, random forest (specifically boosting) performed the best at classifying income to less than/equal to 50k or greater than 50k. This result was somewhat expected given that those models are ensemble models that utilized the "wisdom of (weighted) crowds (of experts)" to decrease variance and bias as well as improving predictions.
 
 From our models, some predictors for a person making greater/less than $50,000 a year align well with conventional beliefs. For instance, having higher education and advanced degrees is certainly a gateway for higher earnings; younger people who just joined the workforce would have less of a chance of making more than \$50k; the gender wage gap is very apparent with males much likely to earn more; and the type of occupation also correlates with earning levels. In addition, some results such as having higher capital gain OR loss both contribute to higher earnings might seem surprising at first but are in fact reasonable. People with higher earning potentials (higher education etc.) tend to have both the knowledge and ability to pursue passive income from capital investments. While there are volatility in the world of investment which might lead to unexpected gain or loses in one year (1994), having a passive income portfolio still does lead to higher life-time earnings in the long run.
 
@@ -91,17 +92,25 @@ In conclusion, our analysis through using the 1994 Census Data provides us with 
 ## Figures and Graphs
 
 ![Missing Data](./images/missing_data.png)
+Figure 1. Missing data visualization
 
 ![Continuous Predictors Exploratory Analysis](./images/exploratory_box_plot.png)
+Figure 2. Box plots of distribution of numeric predictors by income class.
 
 ![Categorical Predictors Exploratory Analysis](./images/exploratory_bar_graph.png)
+Figure 3. Bar graphs of discrete predictors by income class.
 
 ![Correlation Plot](./images/corr_plot.png)
-![ROC Curves for All Trained Models](./images/roc_curve.png)
+Figure 4. Correlation plot of all predictors.
 
 ![Resampling Model Performance](./images/resampling.png)
+Figure 5. Cross-validation AUC of all trained models on training data set.
+
+![ROC Curves for All Trained Models](./images/roc_curve.png)
+Figure 6. ROC plot of all trained models on test data set.
 
 ![Variable Importance for Best Performing Model](./images/vip.png)
+Figure 7. Variable Importance Plot of boosting model.
 
 ![Random Forest](./images/rf_fit.png)
 
