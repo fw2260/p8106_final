@@ -73,10 +73,7 @@ Both logistic regression and discriminant analysis require independence and litt
 For decision tree based model such as random forest, since no probabilistic model is needed with its use of binary splits, no assumption is needed as long as the sampling is representative. 
 
 ### Model Findings
-While all models performed very well in classifying income on the training and testing datasets with AUC > 80, the boosting model was the best-performing model on both training and testing datasets. For the boosting model, as shown in Figure 7, the most important predictors used were `marital status`, `education.num`, `capital.gain`,`age`, `hours.per.week` and `occupation`. 
-
-Non-black box model such as logistical regression also shows a similar picture in terms variable importance. The coefficient estimates demonstrate relatively larger changes in the log odds of income level are associated with a change in marital status from the referenced “Divorced” to “Married” (an increase), occupation change from “MBSA” to “Service” (decrease), relationship status change from “Husband” to “Not-in-family”(decrease), and sex from “Female” to “Male” (increase). For continuous variables, one unit increase in age, capital gain and capital loss also lead to an increase of log odds.
-
+While all models performed very well in classifying income on the training and testing data sets with AUC > 0.80, the boosting model was the best-performing model on both training and testing data sets. For the boosting model, as shown in Figure 7, the most important predictors used were `marital status`, `education.num`, `capital.gain`, `age`, `hours.per.week`, and `occupation`. 
 
 ### Limitations
 Some predictors were non-normally distributed and heavily skewed, or had highly imbalanced classes. This may have affected the model performances for LDA and QDA, as both models assume the observations to be somewhat normally distributed. 
