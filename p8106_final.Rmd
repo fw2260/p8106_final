@@ -282,7 +282,7 @@ roc.lda = roc(income_df$income[-rowTrain], lda.pred)
 roc.qda = roc(income_df$income[-rowTrain], qda.pred)
 roc.mars = roc(income_df$income[-rowTrain], mars.pred)
 roc.rf = roc(income_df$income[-rowTrain], rf.pred)
-roc.gbmA <- roc(income_df$income[-rowTrain], gbmA.pred)
+roc.gbmA = roc(income_df$income[-rowTrain], gbmA.pred)
 
 # AUCs
 auc <- c(roc.glm$auc[1], roc.glmn$auc[1], roc.lda$auc[1], roc.qda$auc[1], 
