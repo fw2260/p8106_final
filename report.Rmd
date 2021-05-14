@@ -65,7 +65,7 @@ For the final models, 12 predictor variables were used in total. The five contin
 All categorical predictors were turned into dummy variables and the data set was split into 70:30 training to test data. The training data with all predictors was then trained on a variety of models with ranging flexibility and assumptions: logistic regression, elastic net, LDA, QDA, MARS, and Random Forest (including bagging and boosting). The cross-validation and test AUC results are shown below in Figures 5 and 6.
 
 ### Tuning Parameters
-An optimal grid for was picked by graphing the cross-validated AUC and tuning the ranges of the various parameters of the grid so that the point at which AUC was maximized was contained well within the graph, instead of on the boundaries. Specifically for boosting, the parameters that were tuned were number of trees (B), shrinkage ($\lambda$), and interaction depth (d).
+An optimal grid was picked by graphing the cross-validated AUC and tuning the ranges of the various parameters of the grid so that the point at which AUC was maximized was contained well within the graph, instead of on the boundaries. Specifically for boosting, the parameters that were tuned were number of trees (B), shrinkage ($\lambda$), and interaction depth (d). Unfortunately, due to hardware and time constraints, we were not able to finish tuning the model.
 
 ### Model Assumptions
 Both logistic regression and discriminant analysis require independence and little to no multicollinearity. Discriminant analysis furthermore assumes multivariate normality and homoscedasticity.   While these assumptions are specified, the models listed above can still be quite robust even when they are slightly violated. For instance, LDA can still work relatively well for non-normal data according to Fisher's principles.
@@ -79,7 +79,7 @@ Some predictors were non-normally distributed and heavily skewed, or had highly 
 
 Moreover, with imbalanced classes such as `race` with a vast majority of observations to be white, it is likely that the analysis does not sufficiently capture the relationship between race and likelihood for higher income.
 
-Also, the possible existence of multicollinearity could violate the assumptions of models like GLM and LDA, and undermine their performance more than other models like Mars and Random Forest.
+Also, the possible existence of multicollinearity could violate the assumptions of models like GLM and LDA, and undermine their performance more than other models like MARS and Random Forest.
 
 There were limitations to the models themselves that may have impacted their performance on our data. Logistic regression models assume a linear relationship between the response and predictors and thus cannot capture any non-linear terms or interaction terms that may exist. The tuning of the boosting grid for random forest posed to be another issue as the boosting model took a long time to run and hindered our chances of finding a better tuning parameter. 
 
@@ -117,5 +117,6 @@ Figure 6. ROC plot of all trained models on test data set.
 Figure 7. Variable Importance Plot of boosting model.
 
 ![Random Forest](./images/rf_fit.png)
+
 ![Gradient Boosting](./images/gbma_fit.png)
 
