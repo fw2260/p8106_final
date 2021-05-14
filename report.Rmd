@@ -43,9 +43,13 @@ Among the continuous predictors, we can see that from Figure 2 the age for those
 
 Among the categorical predictors, we can see from Figure 3 that there exists greater discrepancies in martial status, occupation, race, relationship and sex between the two income groups. Those with incomes greater than 50k per year tend to be married, with occupations in the MBSA category, white, male and husband of the household. Though the majority of these people are also native to the US and working in private companies, the ratio between the two income groups is similar for US and other country natives, as well as government, private and self-employed jobs, so a clear trend can't be identified for the `native.country` and `workclass` predictors. 
 
+The predictors as shown in Figure 4, does not appear to be heavily correlated aside from a `marital status` and `relationship`. This correlation is expected as `relationship` depends on ones' family structure, which is reflected by `marital status`.
+
 ![Continuous Predictors Exploratory Analysis](./images/exploratory_violin_plot.png)
 
 ![Categorical Predictors Exploratory Analysis](./images/exploratory_bar_graph.png)
+
+![Correlation Plot](./images/corr_plot.png)
 
 ## Models
 
@@ -58,7 +62,7 @@ All categorical predictors were turned into dummy variables and the data set was
 ### Tuning Parameters
 
 ### Model Assumptions
-For models such as logistic regression and discriminant analysis, we assume that the predictor variables to be multivariate normal. These models also require the predictor variables as well as the residuals to not be highly correlated with each other. Furthermore, the variance term should be normally distributed and constant across all values of the predictor variables. While these assumptions are specified, the models listed above can still be quite robust even when they are slightly violated. For instance, LDA can still work relatively well for non-normal data according to Fisher's principles
+For models such as logistic regression and discriminant analysis, we assume that the continuous predictor variables to be multivariate normal. These models also require the predictor variables as well as the residuals to not be highly correlated with each other. Furthermore, the variance term should be normally distributed and constant across all values of the predictor variables. While these assumptions are specified, the models listed above can still be quite robust even when they are slightly violated. For instance, LDA can still work relatively well for non-normal data according to Fisher's principles.
 
 For decision tree based model such as random forest, since no probabilistic model is needed with its use of binary splits, no assumption is needed as long as the sampling is representative. 
 

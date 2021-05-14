@@ -163,6 +163,9 @@ ctrl = trainControl(method = "cv", number = 10,
 
 ```
 
+```{r}
+corrplot::corrplot(cor(x), method = "square",type="upper")
+```
 
 ```{r glm, cache = TRUE}
 set.seed(23)
