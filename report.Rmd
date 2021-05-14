@@ -2,7 +2,20 @@
 title: "Income Classification Based on the 1994 US Census"
 author: "Chong Li, Amanda Tsai, Lily Wang"
 date: "5/9/2021"
-output: pdf_document
+output:
+  pdf_document:
+    toc: yes
+    toc_depth: 2
+  html_document:
+    df_print: paged
+    toc: yes
+    toc_depth: '2'
+header-includes:
+- \usepackage{fancyhdr}
+- \usepackage{lipsum}
+- \pagestyle{fancy}
+- \fancyhead[R]{\thepage}
+- \fancypagestyle{plain}{\pagestyle{fancy}}
 ---
 
 ```{r setup, include=FALSE}
@@ -35,8 +48,6 @@ We also experimented with changing the continuous predictors `capital.gain` and 
 
 After the cleaning process outlined above, the final data set that we will perform EDA and modeling on contains 30139 observations and 13 variables.
 
-![Missing Data](./images/missing_data.png)
-
 ## Exploratory Analysis and Visualization
 
 Among the continuous predictors, we can see that from Figure 2 the age for those with incomes less than 50k per year is skewed younger. The age for those with incomes greater than 50k per year is relatively more normally distributed and the median age is higher than that of the other group. Within capital gain and capital loss, we can see that the values for these two predictors are both heavily skewed towards 0 with a light right-tail for both income groups. Looking at the number of years of education, we can see that for those with incomes greater than 50k, the number of years is skewed higher, with the majority of observations having at least 8 years of education and close to half having more than 12. The education years for people with incomes less than 50k is more normally distributed, with the median being around 8 to 9 years of education, and less observations with over 12 years of education. We can also observe that those with incomes greater than 50k tend to work more hours per week. 
@@ -45,11 +56,6 @@ Among the categorical predictors, we can see from Figure 3 that there exists gre
 
 The predictors as shown in Figure 4, does not appear to be heavily correlated aside from a `marital status` and `relationship`. This correlation is expected as `relationship` depends on ones' family structure, which is reflected by `marital status`.
 
-![Continuous Predictors Exploratory Analysis](./images/exploratory_violin_plot.png)
-
-![Categorical Predictors Exploratory Analysis](./images/exploratory_bar_graph.png)
-
-![Correlation Plot](./images/corr_plot.png)
 
 ## Models
 
@@ -81,3 +87,14 @@ From our models, some predictors for a person making greater/less than $50,000 a
 On the other hand, the models also produced a number of results that we were not expecting. For example, staying in a marriage was proven to be the most important predictor of having income greater than \$50k. One potential cause that could explain this relationship is that married couples are sometimes entitled to more favorable tax laws. Another possible explanation could be that people with higher incomes are more likely to find a partner and get married. Although staying in marriage is an important factor, those who have married in the past (divorced/separated/widowed) are also more likely to have more than \$50k income than never-married people. Part of this effect could be attributed to the fact that unmarried individuals are on the younger end (increase age does positively correspond to earnings), but it could also be for other reasons that warrant further investigation.
 
 In conclusion, our analysis through using the 1994 Census Data provides us with many interesting insights to the underlying factors behind income inequalities. Being in a stable marriage turns out to be one of the more important determining factor in predicting one’s income. In addition, at the time this data was gathered, there did exist a sizable gender gap in terms of income. Furthermore, people who have the ability and awareness to participate in investment, even when return is negative, tend to be more likely to earn more money. However, due to the low number of observations from non-white races or non-native immigrants, our analysis does not provide adequate information for the role that race and immigrant status play in determining income levels. 
+
+## Figures and Graphs
+
+![Missing Data](./images/missing_data.png)
+
+![Continuous Predictors Exploratory Analysis](./images/exploratory_violin_plot.png)
+
+![Categorical Predictors Exploratory Analysis](./images/exploratory_bar_graph.png)
+
+![Correlation Plot](./images/corr_plot.png)
+
