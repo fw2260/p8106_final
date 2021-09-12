@@ -1,1 +1,1 @@
-# This repo contains all work for the Data Science II final project.
+# This repo contains all work for the Data Science II final project titled "Income Classification Based on the 1994 US Census". We used various machine learning techniques such as elastic net, LDA, QDA, MARS, and Random Forest to classify income as either below or above $50,000, and explored which variables were the most important in prediction.
